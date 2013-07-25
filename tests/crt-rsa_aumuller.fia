@@ -1,0 +1,55 @@
+noprop m, e, r1, r2 ;
+prime p, q, t ;
+
+dp := { e^-1 mod (p-1) } ;
+dq := { e^-1 mod (p-1) } ;
+iq := { q^-1 mod p } ;
+
+pp := p * t ;
+dpp := dp + r1 * (p-1) ;
+Spp := m^dpp mod pp ;
+
+if pp !=[p] 0 then
+  return error ;
+fi
+if dpp !=[p-1] dp then
+  return error ;
+fi
+
+qq := q * t ;
+dqq := dq + r2 * (q-1) ;
+Sqq := m^dqq mod qq ;
+
+if qq !=[q] 0 then
+  return error ;
+fi
+if dqq !=[q-1] dq then
+  return error ;
+fi
+
+Sp := Spp mod p ;
+Sq := Sqq mod q ;
+
+S := Sq + (q * (iq * (Sp - Sq) mod p)) ;
+
+if S !=[p] Spp then
+  return error ;
+fi
+if S !=[q] Sqq then
+  return error ;
+fi
+
+Spt = Spp mod t ;
+Sqt = Sqq mod t ;
+dpt = dpp mod (t-1) ;
+dqt = dqq mod (t-1) ;
+
+if Spt^dqt !=[t] Sqt^dpt then
+  return error ;
+fi
+
+return S ;
+
+%
+
+_ != @ /\ ( _ =[p] @ \/ _ =[q] @ )
