@@ -1,5 +1,6 @@
 {
   open Lexing ;;
+  open Parser ;;
 
   exception Error of string ;;
 
@@ -22,31 +23,30 @@ rule token = parse
 | ","        { Lcomma }
 | ";"        { Lsemicolon }
 | ":="       { Lassign }
-| "="        { Lequal }
-| "^"        { Lcirc }
-| "-"        { Lminus }
-| "+"        { Lplus }
-| "*"        { Lstar }
-| "!"        { Lbang }
+(* | "="        { Lequal } *)
+(* | "^"        { Lcirc } *)
+(* | "-"        { Lminus } *)
+(* | "+"        { Lplus } *)
+(* | "*"        { Lstar } *)
+(* | "!"        { Lbang } *)
 | "1"        { Lone }
 | "0"        { Lzero }
 | "{"        { Lobrace }
 | "}"        { Lcbrace }
-| "("        { Loparen }
-| ")"        { Lcparen }
-| "["        { Lobracket }
-| "]"        { Lcbracket }
+(* | "("        { Loparen } *)
+(* | ")"        { Lcparen } *)
+(* | "["        { Lobracket } *)
+(* | "]"        { Lcbracket } *)
 | "%"        { Lpercent }
-| "mod"      { Lmod }
-| "if"       { Lif }
-| "then"     { Lthen }
-| "else"     { Lelse }
-| "end"      { Lend }
+(* | "mod"      { Lmod } *)
+(* | "if"       { Lif } *)
+(* | "then"     { Lthen } *)
+(* | "else"     { Lelse } *)
+(* | "end"      { Lend } *)
 | "return"   { Lreturn }
-| "_"        { Lunderscore }
-| "@"        { Lat }
-| "/"        { Lslash }
-| "\\"       { Lbackslash }
+(* | "@"        { Lat } *)
+(* | "/"        { Lslash } *)
+(* | "\\"       { Lbackslash } *)
 | ident as s { Lident (s) }
 | _ as c     { raise (Error (String.make 1 c)) }
 | eof        { Leof }
