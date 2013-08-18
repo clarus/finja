@@ -1,6 +1,9 @@
 %{
   (* open Batteries ;; *)
   open Computation ;;
+
+  let t pt s e = { term = pt ; spos = s ; epos = e } ;;
+  
 %}
 
 %token <string> Lident
@@ -32,61 +35,81 @@
 %%
 
 desc:
- | t = term; Lpercent; a = attack; Leof {
-   (t, a)
+ | pt = term; Lpercent; a = attack; Leof {
+   (pt, a)
  }
 ;
 
 term:
 | Lnoprop; l = separated_nonempty_list(Lcomma, Lident); Lsemicolon; cont = term {
-  List.fold_right (fun i acc -> Let(i, NoProp(i), acc)) l cont
+  List.fold_right
+  (fun i acc -> t (PLet (i, t (PNoProp (i)) $startpos(l) $endpos(l), acc))
+    $startpos $endpos)
+  l cont
 }
 | Lprime; l = separated_nonempty_list(Lcomma, Lident); Lsemicolon; cont = term {
-  List.fold_right (fun i acc -> Let(i, Prime(i), acc)) l cont
+  List.fold_right
+  (fun i acc -> t (PLet (i, t (PPrime (i)) $startpos(l) $endpos(l), acc))
+    $startpos $endpos)
+  l cont
 }
 | i = Lident; Lassign; e = mp_expr; Lsemicolon; cont = term {
-  Let(i, e, cont)
+  t (PLet (i, e, cont)) $startpos $endpos
 }
 | Lif; c = cond; Labortwith; e = mp_expr; Lsemicolon; cont = term {
-  If(c, e, cont)
+  t (PIf (c, e, cont)) $startpos $endpos
 }
 | Lreturn; e = mp_expr; Lsemicolon {
-  Return(e)
+  t (PReturn (e)) $startpos $endpos
 }
 ;
 
 mp_expr:
 | Lobrace; e = expr; Lcbrace {
-  Protected(e)
+  t (PProtected (e)) $startpos $endpos
 }
 | e = expr { e }
 ;
 
 expr:
 | Loparen; e = mp_expr; Lcparen { e }
-| i = Lident { Var(i) }
-| Lone { One }
-| Lzero { Zero }
-| a = mp_expr; Lminus; b = mp_expr { Sum([ a ; Opp(b) ]) }
-| a = mp_expr; Lplus; b = mp_expr { Sum([ a ; b ]) }
-| a = mp_expr; Lstar; b = mp_expr { Prod([ a ; b ]) }
-| a = mp_expr; Lcirc; b = mp_expr { Exp(a, b) }
-| a = mp_expr; Lmod; b = mp_expr { Mod(a, b) }
-| Lminus; e = mp_expr; %prec uminus { Opp(e) }
+| i = Lident { t (PVar (i)) $startpos $endpos }
+| Lone { t (POne) $startpos $endpos }
+| Lzero { t (PZero) $startpos $endpos }
+| a = mp_expr; Lminus; b = mp_expr {
+  t (PSum ([ a ; t (POpp(b)) $startpos(b) $endpos(b) ]))
+  $startpos $endpos
+}
+| a = mp_expr; Lplus; b = mp_expr {
+  t (PSum ([ a ; b ])) $startpos $endpos
+}
+| a = mp_expr; Lstar; b = mp_expr  {
+  t (PProd ([ a ; b ])) $startpos $endpos
+}
+| a = mp_expr; Lcirc; b = mp_expr {
+  t (PExp (a, b)) $startpos $endpos
+}
+| a = mp_expr; Lmod; b = mp_expr {
+  t (PMod (a, b)) $startpos $endpos
+}
+| Lminus; e = mp_expr; %prec uminus { t (POpp (e)) $startpos $endpos }
 ;
 
 cond:
 | a = mp_expr; Lequal; b = mp_expr {
-  Eq(a, b)
+  t (PEq (a, b)) $startpos $endpos
 }
 | a = mp_expr; Lnoteq; b = mp_expr {
-  NotEq(a, b)
+  t (PNotEq (a, b)) $startpos $endpos
 }
 | a = mp_expr; Lequal; Lobracket; m = expr; Lcbracket; b = mp_expr {
-  EqMod(a, b, m)
+  t (PEqMod (a, b, m)) $startpos $endpos
 }
 | a = mp_expr; Lnoteq; Lobracket; m = expr; Lcbracket; b = mp_expr {
-  NotEqMod(a, b, m)
+  t (PNotEqMod (a, b, m)) $startpos $endpos
+}
+| e = mp_expr {
+  e
 }
 ;
 
