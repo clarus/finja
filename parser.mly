@@ -1,6 +1,6 @@
 %{
   (* open Batteries ;; *)
-  open Ast ;;
+  open Computation ;;
 %}
 
 %token <string> Lident
@@ -22,7 +22,7 @@
 
 %start desc
 
-%type <Ast.fia> desc
+%type <Computation.description> desc
 
 %%
 

@@ -43,7 +43,7 @@ rule token = parse
 (* | "then"     { Lthen } *)
 (* | "else"     { Lelse } *)
 (* | "end"      { Lend } *)
-| "return"   { Lreturn }
+(* | "return"   { Lreturn } *)
 (* | "@"        { Lat } *)
 (* | "/"        { Lslash } *)
 (* | "\\"       { Lbackslash } *)
