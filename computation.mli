@@ -1,5 +1,3 @@
-(* open Batteries ;; *)
-
 type term_p = {
   term: pterm ;
   spos: Lexing.position;

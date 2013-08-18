@@ -1,9 +1,7 @@
 %{
-  (* open Batteries ;; *)
   open Computation ;;
 
   let t pt s e = { term = pt ; spos = s ; epos = e } ;;
-  
 %}
 
 %token <string> Lident
