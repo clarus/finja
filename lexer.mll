@@ -2,7 +2,7 @@
   open Lexing ;;
   open Parser ;;
 
-  exception Error of string ;;
+  exception Error of char ;;
 
   let newline lexbuf =
     let pos = lexbuf.lex_curr_p
@@ -46,5 +46,5 @@ rule token = parse
 (* | "/"          { Lslash } *)
 (* | "\\"         { Lbackslash } *)
 | ident as s   { Lident (s) }
-| _ as c       { raise (Error (String.make 1 c)) }
+| _ as c       { raise (Error c) }
 | eof          { Leof }
