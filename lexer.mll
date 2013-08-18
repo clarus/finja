@@ -16,37 +16,35 @@ let num = ['0'-'9']
 let ident = alpha (alpha | num | '_' | '\'')*
 
 rule token = parse
-  [' ' '\t'] { token lexbuf }
-| '\n'       { newline lexbuf; token lexbuf }
-| "noprop"   { Lnoprop }
-| "prime"    { Lprime }
-| ","        { Lcomma }
-| ";"        { Lsemicolon }
-| ":="       { Lassign }
-(* | "="        { Lequal } *)
-| "^"        { Lcirc }
-| "-"        { Lminus }
-| "+"        { Lplus }
-| "*"        { Lstar }
-(* | "!"        { Lbang } *)
-| "1"        { Lone }
-| "0"        { Lzero }
-| "{"        { Lobrace }
-| "}"        { Lcbrace }
-| "("        { Loparen }
-| ")"        { Lcparen }
-(* | "["        { Lobracket } *)
-(* | "]"        { Lcbracket } *)
-| "%"        { Lpercent }
-| "mod"      { Lmod }
-(* | "if"       { Lif } *)
-(* | "then"     { Lthen } *)
-(* | "else"     { Lelse } *)
-(* | "end"      { Lend } *)
-| "return"   { Lreturn }
-(* | "@"        { Lat } *)
-(* | "/"        { Lslash } *)
-(* | "\\"       { Lbackslash } *)
-| ident as s { Lident (s) }
-| _ as c     { raise (Error (String.make 1 c)) }
-| eof        { Leof }
+  [' ' '\t']   { token lexbuf }
+| '\n'         { newline lexbuf; token lexbuf }
+| "noprop"     { Lnoprop }
+| "prime"      { Lprime }
+| ","          { Lcomma }
+| ";"          { Lsemicolon }
+| ":="         { Lassign }
+| "!="         { Lnoteq }
+| "="          { Lequal }
+| "^"          { Lcirc }
+| "-"          { Lminus }
+| "+"          { Lplus }
+| "*"          { Lstar }
+| "1"          { Lone }
+| "0"          { Lzero }
+| "{"          { Lobrace }
+| "}"          { Lcbrace }
+| "("          { Loparen }
+| ")"          { Lcparen }
+| "["          { Lobracket }
+| "]"          { Lcbracket }
+| "%"          { Lpercent }
+| "mod"        { Lmod }
+| "if"         { Lif }
+| "abort with" { Labortwith }
+| "return"     { Lreturn }
+(* | "@"          { Lat } *)
+(* | "/"          { Lslash } *)
+(* | "\\"         { Lbackslash } *)
+| ident as s   { Lident (s) }
+| _ as c       { raise (Error (String.make 1 c)) }
+| eof          { Leof }

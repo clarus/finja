@@ -7,14 +7,14 @@
 %token Lnoprop Lprime
 %token Lcomma Lsemicolon
 %token Lassign
-(* %token Lequal Lbang *)
+%token Lequal Lnoteq
 %token Lone Lzero
 %token Lplus Lminus Lstar Lcirc Lmod
 %token Lobrace Lcbrace
 %token Loparen Lcparen
-(* %token Lobracket Lcbracket *)
+%token Lif Labortwith
+%token Lobracket Lcbracket
 %token Lpercent
-(* %token Lif Lthen Lelse Lend Lreturn *)
 (* %token Lslash Lbackslash *)
 (* %token Lat *)
 %token Lreturn
@@ -47,6 +47,9 @@ term:
 | i = Lident; Lassign; e = mp_expr; Lsemicolon; cont = term {
   Let(i, e, cont)
 }
+| Lif; c = cond; Labortwith; e = mp_expr; Lsemicolon; cont = term {
+  If(c, e, cont)
+}
 | Lreturn; e = mp_expr; Lsemicolon {
   Return(e)
 }
@@ -70,6 +73,21 @@ expr:
 | a = mp_expr; Lcirc; b = mp_expr { Exp(a, b) }
 | a = mp_expr; Lmod; b = mp_expr { Mod(a, b) }
 | Lminus; e = mp_expr; %prec uminus { Opp(e) }
+;
+
+cond:
+| a = mp_expr; Lequal; b = mp_expr {
+  Eq(a, b)
+}
+| a = mp_expr; Lnoteq; b = mp_expr {
+  NotEq(a, b)
+}
+| a = mp_expr; Lequal; Lobracket; m = expr; Lcbracket; b = mp_expr {
+  EqMod(a, b, m)
+}
+| a = mp_expr; Lnoteq; Lobracket; m = expr; Lcbracket; b = mp_expr {
+  NotEqMod(a, b, m)
+}
 ;
 
 attack:

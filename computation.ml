@@ -6,7 +6,7 @@ type term =
 | NoProp of string
 | Prime of string
 | Protected of term
-| If of term * term * term
+| If of cond * term * term
 | Sum of term list
 | Opp of term
 | Prod of term list
@@ -19,50 +19,59 @@ type term =
 | ZeroFault of int
 | Return of term
 
+and cond =
+| Eq of term * term
+| NotEq of term * term
+| EqMod of term * term * term
+| NotEqMod of term * term * term
+
 type attack_condition =
 | False
 
 type description = term * attack_condition
 
 let html_of_term t =
-  let rec noprop = function
+  let rec html_of_cond = function
+    | Eq (a, b) -> (hot a) ^ " = " ^ (hot b)
+    | NotEq (a, b) -> (hot a) ^ " &ne; " ^ (hot b)
+    | EqMod (a, b, m) -> (hot a) ^ " &equiv; " ^ (hot b)
+      ^ " (mod " ^ (hot m) ^ ")"
+    | NotEqMod (a, b, m) -> (hot a) ^ " &#8802; " ^ (hot b)
+      ^ " (mod " ^ (hot m) ^ ")"
+  and noprop = function
     | Let (v, NoProp (v'), t) when v = v' -> ", <var>" ^ v ^ "</var>"
       ^ (noprop t)
-    | _ as t -> " ;\n" ^ (hot 0 t)
+    | _ as t -> " ;\n" ^ (hot t)
   and prime = function
     | Let (v, Prime (v'), t) when v = v' -> ", <var>" ^ v ^ "</var>"
       ^ (prime t)
-    | _ as t -> " ;\n" ^ (hot 0 t)
+    | _ as t -> " ;\n" ^ (hot t)
   and opp = function
-    | Opp(t) -> " - " ^ (hot 0 t)
-    | _ as t -> " + " ^ (hot 0 t)
-  and hot l t =
-    (String.make (l * 2) ' ')
-    ^ (match t with
+    | Opp (t) -> " - " ^ (hot t)
+    | _ as t -> " + " ^ (hot t)
+  and hot = function
     | Let (v, NoProp (v'), t) when v = v' -> "<b>noprop</b> <var>" ^ v
       ^ "</var>" ^ (noprop t)
     | Let (v, Prime (v'), t) when v = v' -> "<b>prime</b> <var>" ^ v
       ^ "</var>" ^ (prime t)
-    | Let (v, e, t) -> "<var>" ^ v ^ "</var> := " ^ (hot 0 e) ^ " ;\n"
-      ^ (hot l t)
+    | Let (v, e, t) -> "<var>" ^ v ^ "</var> := " ^ (hot e) ^ " ;\n"
+      ^ (hot t)
     | Var (v) | NoProp (v) | Prime (v) -> "<var>" ^ v ^ "</var>"
-    | Protected (t) -> "<i>{</i> " ^ (hot 0 t) ^ " <i>}</i>"
-    | If (c, t, e) -> "<b>if</b> " ^ (hot 0 c) ^ "<b>then</b>\n"
-      ^ (hot (l + 1) t) ^ "\n"
-      ^ (String.make (l * 2) ' ') ^ "<b>else</b>\n" ^ (hot l e)
-      ^ "\n<b>end</b>"
+    | Protected (t) -> "<i>{</i> " ^ (hot t) ^ " <i>}</i>"
+    | If (c, t, e) -> "<b>if</b> " ^ (html_of_cond c) ^ " <b>abort with</b> "
+      ^ (hot t) ^ " ;\n" ^ (hot e)
     | Sum (l) -> List.fold_left (fun h t -> h ^ (opp t))
-      (hot 0 (List.hd l)) (List.tl l)
-    | Opp (t) -> "-" ^ (hot 0 t)
-    | Prod (l) -> List.fold_left (fun h t -> h ^ " * " ^ (hot 0 t))
-      (hot 0 (List.hd l)) (List.tl l)
-    | Inv (t) -> "(" ^ (hot 0 t) ^ ")<sup>-1</sup>"
-    | Exp (a, b) -> "(" ^ (hot 0 a) ^ ")<sup>" ^ (hot 0 b) ^ "</sup>"
-    | Mod (a, b) -> (hot 0 a) ^ " <b>mod</b> " ^ (hot 0 b)
+      (hot (List.hd l)) (List.tl l)
+    | Opp (t) -> "-" ^ (hot t)
+    | Prod (l) -> List.fold_left (fun h t -> h ^ " * " ^ (hot t))
+      (hot (List.hd l)) (List.tl l)
+    | Inv (t) -> "(" ^ (hot t) ^ ")<sup>-1</sup>"
+    | Exp (a, b) -> "(" ^ (hot a) ^ ")<sup>" ^ (hot b) ^ "</sup>"
+    | Mod (a, b) -> (hot a) ^ " mod " ^ (hot b)
     | Zero -> "0"
     | One -> "1"
     | RandomFault (_) -> "<strong>Fault</strong>"
     | ZeroFault (_) -> "<em>Fault</em>"
-    | Return (t) -> "<b>return</b> " ^ (hot 0 t) ^ " ;\n")
-  in hot 0 t
+    | Return (t) -> "<b>return</b> " ^ (hot t) ^ " ;\n"
+  in hot t
 ;;
