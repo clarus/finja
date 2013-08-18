@@ -7,11 +7,11 @@
 %token Lnoprop Lprime
 %token Lcomma Lsemicolon
 %token Lassign
-(* %token Lequal Lbang Lmod *)
-(* %token Lcirc Lminus Lplus Lstar *)
+(* %token Lequal Lbang *)
 %token Lone Lzero
+%token Lplus Lminus Lstar Lcirc Lmod
 %token Lobrace Lcbrace
-(* %token Loparen Lcparen *)
+%token Loparen Lcparen
 (* %token Lobracket Lcbracket *)
 %token Lpercent
 (* %token Lif Lthen Lelse Lend Lreturn *)
@@ -19,6 +19,11 @@
 (* %token Lat *)
 %token Lreturn
 %token Leof
+
+%left Lplus Lminus
+%left Lcirc Lmod
+%left Lstar
+%nonassoc uminus
 
 %start desc
 
@@ -39,18 +44,15 @@ term:
 | Lprime; l = separated_nonempty_list(Lcomma, Lident); Lsemicolon; cont = term {
   List.fold_right (fun i acc -> Let(i, Prime(i), acc)) l cont
 }
-| i = Lident; Lassign; e = maybe_protected_expr; Lsemicolon; cont = term {
+| i = Lident; Lassign; e = mp_expr; Lsemicolon; cont = term {
   Let(i, e, cont)
 }
-| Lreturn; i = Lident; Lsemicolon {
-  Var(i)
-}
-| e = expr {
-  e
+| Lreturn; e = mp_expr; Lsemicolon {
+  Return(e)
 }
 ;
 
-maybe_protected_expr:
+mp_expr:
 | Lobrace; e = expr; Lcbrace {
   Protected(e)
 }
@@ -58,9 +60,16 @@ maybe_protected_expr:
 ;
 
 expr:
+| Loparen; e = mp_expr; Lcparen { e }
 | i = Lident { Var(i) }
 | Lone { One }
 | Lzero { Zero }
+| a = mp_expr; Lminus; b = mp_expr { Sum([ a ; Opp(b) ]) }
+| a = mp_expr; Lplus; b = mp_expr { Sum([ a ; b ]) }
+| a = mp_expr; Lstar; b = mp_expr { Prod([ a ; b ]) }
+| a = mp_expr; Lcirc; b = mp_expr { Exp(a, b) }
+| a = mp_expr; Lmod; b = mp_expr { Mod(a, b) }
+| Lminus; e = mp_expr; %prec uminus { Opp(e) }
 ;
 
 attack:

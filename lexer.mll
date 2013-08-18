@@ -24,26 +24,26 @@ rule token = parse
 | ";"        { Lsemicolon }
 | ":="       { Lassign }
 (* | "="        { Lequal } *)
-(* | "^"        { Lcirc } *)
-(* | "-"        { Lminus } *)
-(* | "+"        { Lplus } *)
-(* | "*"        { Lstar } *)
+| "^"        { Lcirc }
+| "-"        { Lminus }
+| "+"        { Lplus }
+| "*"        { Lstar }
 (* | "!"        { Lbang } *)
 | "1"        { Lone }
 | "0"        { Lzero }
 | "{"        { Lobrace }
 | "}"        { Lcbrace }
-(* | "("        { Loparen } *)
-(* | ")"        { Lcparen } *)
+| "("        { Loparen }
+| ")"        { Lcparen }
 (* | "["        { Lobracket } *)
 (* | "]"        { Lcbracket } *)
 | "%"        { Lpercent }
-(* | "mod"      { Lmod } *)
+| "mod"      { Lmod }
 (* | "if"       { Lif } *)
 (* | "then"     { Lthen } *)
 (* | "else"     { Lelse } *)
 (* | "end"      { Lend } *)
-(* | "return"   { Lreturn } *)
+| "return"   { Lreturn }
 (* | "@"        { Lat } *)
 (* | "/"        { Lslash } *)
 (* | "\\"       { Lbackslash } *)
