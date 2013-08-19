@@ -45,20 +45,24 @@ let () =
       IO.close_in fia;
 
       let term = Sanity.check_term (fst desc) in
+      let cond = (snd desc) in
 
       if !lint_only then exit 0;
 
       let report = File.open_out !html_output in
-      Html.print_header report !fia_input;
-      Html.print_term report term;
+      Html.start_header report !fia_input;
+      Html.print_options report !transcient !zeroing;
+      Html.print_term report "Computation" term;
+      Html.print_attack_success_condition report cond;
+      Html.print_term report "Reduced computation" Computation.Zero;
+      Html.end_header report;
 
       let attempt = FaultInjection.inject_fault term !transcient !zeroing in
       let rec loop i =
         try
           let t' = attempt i in
           if t' <> term then begin
-            Html.print_title report i;
-            Html.print_term report t';
+            Html.print_attempt report i t' Computation.Zero Computation.False;
             loop (i + 1)
           end
         with FaultInjection.Non_faultable ->
