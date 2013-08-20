@@ -62,7 +62,7 @@ let () =
         try
           let t' = attempt i in
           if t' <> term then begin
-            Html.print_attempt report i t' Computation.Zero Computation.False;
+            Html.print_attempt report i t' Computation.Zero false;
             loop (i + 1)
           end
         with FaultInjection.Non_faultable ->

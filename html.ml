@@ -56,13 +56,15 @@ let start_header html fia =
   body { font-size:1em; color:#222; padding:0.5em; font-size:0.8em; }\
   p { margin:0.5em; }\
   h1 { font-size:1.3em; margin:0 0.39em; }\
-  h2 { font-size:1em; margin:1em 0.5em 0 0.5em; padding:0.5em 0 0 0; border-top:1px solid #aaa; font-weight:normal; }\
+  h2 { font-size:0.8em; margin:1em 0.63em 0 0.63em; padding:0.63em 0 0 0; border-top:1px solid #aaa; font-weight:normal; }\
+  h2.success { color: #d22; }\
+  h2.failure { color: #8b2; }\
   pre { font-size:1.2em; padding:0.5em; background-color:#ddd; line-height:150%%; }\
-  pre strong { color:red; }\
+  pre strong { color:#48f; }\
   dl.attempt { display: none; }\
   dt { font-weight:bold; margin:0.5em 0.5em 0 0.5em; }\
   dd { margin:0 0.5em 0.5em 0.5em; }\
-  a { float:right; font-size:0.8em; color:#aaa; }
+  a { float:right; font-size:1em; color:#aaa; }\
   </style>\
   <script type=\"text/javascript\">\
   function ec (target) {\
@@ -98,13 +100,14 @@ let print_term html title term =
 ;;
 
 let print_attempt html n term reduced_term result =
-  Printf.fprintf html "<h2>Attempt %d <a href=\"#attempt%d\" \
+  Printf.fprintf html "<h2 class=\"%s\">Attempt %d <a href=\"#attempt%d\" \
   onclick=\"return ec(this.href);\">expand/collapse</a></h2>\
   <dl id=\"attempt%d\" class=\"attempt\">"
-    n n n;
+    (if result then "success" else "failure") n n n;
   print_term html "Faulted computation" term;
   print_term html "Reduced version" reduced_term;
-  Printf.fprintf html "<dt>Result</dt><dd><p>TODO</p></dd></dl>";
+  Printf.fprintf html "<dt>Result</dt><dd><p>%s</p></dd></dl>"
+    (if result then "Attack successful." else "Harmless fault injection.");
 ;;
 
 let close_html html =
