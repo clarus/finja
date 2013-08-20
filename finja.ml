@@ -63,7 +63,7 @@ let () =
             in
             let faulted_term = attempt ftype i in
             if faulted_term <> term then begin
-              let result = Analysis.check cond term faulted_term in
+              let result = Analysis.check_attack cond term faulted_term in
               let reduced_fterm = Reduction.reduce faulted_term in
               Html.print_attempt tmp faulted_term reduced_fterm result;
               loop (if !fault_type = Both && i != prev then i else i + 1) i

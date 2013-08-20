@@ -63,8 +63,11 @@ let start_header html fia =
   body { font-size:1em; color:#222; padding:0.5em; font-size:0.8em; }\
   p { margin:0 0 0.5em 0; }\
   h1 { font-size:1.3em; margin:0 0.39em; }\
-  h2 { font-size:0.8em; margin:1em 0.63em 0 0.63em; padding:0.63em 0 0 0;\
-       border-top:1px solid #aaa; font-weight:normal; }\
+  h2 { font-size:0.8em; }\
+  h2 a { display:block; margin:0 0.63em; padding:0.63em 0 1em 0;\
+         border-top:1px solid #aaa; font-weight:normal; color:inherit;\
+         text-decoration:none; }\
+  h2 a span { float:right; font-size:1em; color:#aaa; text-decoration:underline; }\
   .success { color: #d22; }\
   .failure { color: #8b2; }\
   pre { font-size:1.2em; padding:0.5em; background-color:#ddd;\
@@ -73,7 +76,6 @@ let start_header html fia =
   dl.attempt { display: none; }\
   dt { font-weight:bold; margin:0.5em 0.5em 0 0.5em; }\
   dd { margin:0 0.5em 0.5em 0.5em; }\
-  a { float:right; font-size:1em; color:#aaa; }\
   </style>\
   <script type=\"text/javascript\">\
   function ec (target) {\
@@ -84,8 +86,8 @@ let start_header html fia =
    </script>\
  </head>\
 <body>\
-  <h1>finja report for &quot;%s&quot;</h1>\
-" fia fia
+  <h1>finja report for &quot;%s&quot;</h1>"
+    fia fia
 ;;
 
 let print_options html transcient fault_type =
@@ -108,13 +110,12 @@ let end_header html =
 ;;
 
 let print_summary html successful_attacks_count =
-  Printf.fprintf html "<dt>Summary</dt><dd><p>\
+  Printf.fprintf html "<dt>Summary <strong class=\"%s\">%s</strong></dt><dd><p>\
   <i>Total number of different fault injection:</i> %d.<br />\
-  <i>Total number of successful attack:</i> %d \
-  <strong class=\"%s\">%s</strong>.</p></dd>"
-    !attempt successful_attacks_count
+  <i>Total number of successful attack:</i> %d.</p></dd>"
     (if successful_attacks_count = 0 then "failure" else "success")
     (if successful_attacks_count = 0 then "PROTECTED" else "BROKEN")
+    !attempt successful_attacks_count
 ;;
 
 let print_term html title term =
@@ -123,9 +124,9 @@ let print_term html title term =
 ;;
 
 let print_attempt html term reduced_term result =
-  Printf.fprintf html "<h2 class=\"%s\">Attempt %d <a href=\"#attempt%d\" \
-  onclick=\"return ec(this.href);\">expand/collapse</a></h2>\
-  <dl id=\"attempt%d\" class=\"attempt\">"
+  Printf.fprintf html "<h2 class=\"%s\"><a href=\"#attempt%d\" \
+  onclick=\"return ec(this.href);\">Attempt %d\
+  <span>expand/collapse</span></a></h2><dl id=\"attempt%d\" class=\"attempt\">"
     (if result then "success" else "failure") !attempt !attempt !attempt;
   attempt := !attempt + 1;
   print_term html "Faulted computation" term;
