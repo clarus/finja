@@ -18,7 +18,6 @@
 %token Lreturn
 %token Lpercent
 %token Land Lor
-%token Lat Lunderscore
 %token Leof
 
 %left Lplus Lminus
@@ -37,9 +36,9 @@
 %%
 
 desc:
- | pt = term; Lpercent; a = attack; Leof {
-   (pt, a)
- }
+| t = term; Lpercent; a = cond; Leof {
+  (t, a)
+}
 ;
 
 term:
@@ -79,7 +78,7 @@ expr:
 | Lone { t (POne) $startpos $endpos }
 | Lzero { t (PZero) $startpos $endpos }
 | a = mp_expr; Lminus; b = mp_expr {
-  t (PSum ([ a ; t (POpp(b)) $startpos(b) $endpos(b) ]))
+  t (PSum ([ a ; t (POpp (b)) $startpos(b) $endpos(b) ]))
   $startpos $endpos
 }
 | a = mp_expr; Lplus; b = mp_expr {
@@ -94,41 +93,30 @@ expr:
 | a = mp_expr; Lmod; b = mp_expr {
   t (PMod (a, b)) $startpos $endpos
 }
-| Lminus; e = mp_expr; %prec uminus { t (POpp (e)) $startpos $endpos }
+| Lminus; e = mp_expr; %prec uminus {
+  t (POpp (e)) $startpos $endpos
+}
 ;
 
 cond:
-| a = mp_expr; Lequal; b = mp_expr {
+| Loparen; c = cond; Lcparen { c }
+| a = cond; Lequal; b = cond {
   t (PEq (a, b)) $startpos $endpos
 }
-| a = mp_expr; Lnoteq; b = mp_expr {
+| a = cond; Lnoteq; b = cond {
   t (PNotEq (a, b)) $startpos $endpos
 }
-| a = mp_expr; Lequal; Lobracket; m = expr; Lcbracket; b = mp_expr {
+| a = cond; Lequal; Lobracket; m = expr; Lcbracket; b = cond {
   t (PEqMod (a, b, m)) $startpos $endpos
 }
-| a = mp_expr; Lnoteq; Lobracket; m = expr; Lcbracket; b = mp_expr {
+| a = cond; Lnoteq; Lobracket; m = expr; Lcbracket; b = cond {
   t (PNotEqMod (a, b, m)) $startpos $endpos
 }
-| e = mp_expr {
-  e
+| a = cond; Land; b = cond {
+  t (PAnd (a, b)) $startpos $endpos
 }
-;
-
-attack:
-| Loparen; a = attack; Lcparen { a }
-| Lzero { False }
-| Lone { True }
-| Lat { Faulted }
-| Lunderscore { Result }
-| a = attack; Land; b = attack { And (a, b) }
-| a = attack; Lor; b = attack { Or (a, b) }
-| a = attack; Lequal; b = attack { Equal (a, b) }
-| a = attack; Lnoteq; b = attack { NotEqual (a, b) }
-| a = attack; Lequal; Lobracket; i = Lident; Lcbracket; b = attack {
-  EqualMod (a, b, i)
+| a = cond; Lor; b = cond {
+  t (POr (a, b)) $startpos $endpos
 }
-| a = attack; Lnoteq; Lobracket; i = Lident; Lcbracket; b = attack {
-  NotEqualMod (a, b, i)
-}
+| e = mp_expr { e }
 ;

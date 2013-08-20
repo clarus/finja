@@ -46,21 +46,20 @@ let () =
     in begin
       IO.close_in fia;
 
-      let term = Sanity.check_term (fst desc) in
+      let term, cond = Sanity.check desc in
       let reduced_term = Reduction.reduce term in
-      let cond = snd desc in
 
       if !lint_only then exit 0;
 
-      let (tmp, tmpname) = File.open_temporary_out () in
+      let tmp, tmpname = File.open_temporary_out () in
 
       let attempt = FaultInjection.inject_fault term !transcient in
-      let successful_attacks =
+      let successful_attacks_count =
         let rec loop i prev success =
           try
             let ftype = match !fault_type with
               | Both -> if i = prev then Zeroing else Randomizing
-              | _ -> !fault_type
+              | _    -> !fault_type
             in
             let faulted_term = attempt ftype i in
             if faulted_term <> term then
@@ -81,12 +80,12 @@ let () =
       File.with_file_out !html_output (fun report ->
         Html.start_header report !fia_input;
         Html.print_options report !transcient !fault_type;
+        Html.print_summary report successful_attacks_count;
         Html.print_term report "Computation" term;
         Html.print_attack_success_condition report cond;
         Html.print_term report "Reduced computation" reduced_term;
-        Html.print_summary report successful_attacks;
         Html.end_header report;
-        Enum.iter (Printf.fprintf report "%s") (File.lines_of tmpname);
+        Enum.iter (Printf.fprintf report "%s\n") (File.lines_of tmpname);
         Html.close_html report)
     end
   with

@@ -5,64 +5,53 @@ let attempt = ref 0 ;;
 
 let html_of_term t =
   let rec noprop = function
-    | Let (v, NoProp (v'), t) when v = v' -> ", <var>" ^ v ^ "</var>"
-      ^ (noprop t)
+    | Let (v, NoProp (v'), t) when v = v' ->
+      ", <var>" ^ v ^ "</var>" ^ (noprop t)
     | _ as t -> " ;\n" ^ (hot t)
   and prime = function
-    | Let (v, Prime (v'), t) when v = v' -> ", <var>" ^ v ^ "</var>"
-      ^ (prime t)
+    | Let (v, Prime (v'), t) when v = v' ->
+      ", <var>" ^ v ^ "</var>" ^ (prime t)
     | _ as t -> " ;\n" ^ (hot t)
   and opp = function
     | Opp (t) -> " - " ^ (hot t)
-    | _ as t -> " + " ^ (hot t)
+    | _ as t  -> " + " ^ (hot t)
   and hot = function
-    | Let (v, NoProp (v'), t) when v = v' -> "<b>noprop</b> <var>" ^ v
-      ^ "</var>" ^ (noprop t)
-    | Let (v, Prime (v'), t) when v = v' -> "<b>prime</b> <var>" ^ v
-      ^ "</var>" ^ (prime t)
-    | Let (v, e, t) -> "<var>" ^ v ^ "</var> := " ^ (hot e) ^ " ;\n"
-      ^ (hot t)
-    | Var (v) | NoProp (v) | Prime (v) -> "<var>" ^ v ^ "</var>"
-    | Protected (t) -> "<i>{</i> " ^ (hot t) ^ " <i>}</i>"
-    | If (c, t, e) -> "<b>if</b> " ^ (hot c) ^ " <b>abort with</b> "
-      ^ (hot t) ^ " ;\n" ^ (hot e)
+    | Let (v, NoProp (v'), t) when v = v' ->
+      "<b>noprop</b> <var>" ^ v ^ "</var>" ^ (noprop t)
+    | Let (v, Prime (v'), t) when v = v' ->
+      "<b>prime</b> <var>" ^ v ^ "</var>" ^ (prime t)
+    | Let (v, e, t) ->
+      "<var>" ^ v ^ "</var> := " ^ (hot e) ^ " ;\n" ^ (hot t)
+    | Var (v) | NoProp (v) | Prime (v) ->
+      "<var>" ^ v ^ "</var>"
+    | Protected (t) ->
+      "<i>{</i> " ^ (hot t) ^ " <i>}</i>"
+    | If (c, t, e) ->
+      "<b>if</b> " ^ (hot c) ^ " <b>abort with</b> " ^ (hot t) ^ " ;\n"
+      ^ (hot e)
     | Sum (l) -> List.fold_left (fun h t -> h ^ (opp t))
-      (hot (List.hd l)) (List.tl l)
+        (hot (List.hd l)) (List.tl l)
     | Opp (t) -> "-" ^ (hot t)
     | Prod (l) -> List.fold_left (fun h t -> h ^ " * " ^ (hot t))
-      (hot (List.hd l)) (List.tl l)
-    | Inv (t) -> "(" ^ (hot t) ^ ")<sup>-1</sup>"
-    | Exp (a, b) -> "(" ^ (hot a) ^ ")<sup>" ^ (hot b) ^ "</sup>"
-    | Mod (a, b) -> (hot a) ^ " mod " ^ (hot b)
-    | Zero -> "0"
-    | One -> "1"
-    | RandomFault (_) -> "<strong>Random</strong>"
-    | ZeroFault (_) -> "<strong>Zero</strong>"
-    | Return (t) -> "<b>return</b> " ^ (hot t) ^ " ;\n"
-    | Eq (a, b) -> (hot a) ^ " = " ^ (hot b)
-    | NotEq (a, b) -> (hot a) ^ " &ne; " ^ (hot b)
-    | EqMod (a, b, m) -> (hot a) ^ " &equiv; " ^ (hot b)
-      ^ " (mod " ^ (hot m) ^ ")"
-    | NotEqMod (a, b, m) -> (hot a) ^ " &#8802; " ^ (hot b)
-      ^ " (mod " ^ (hot m) ^ ")"
+        (hot (List.hd l)) (List.tl l)
+    | Inv (t)            -> "(" ^ (hot t) ^ ")<sup>-1</sup>"
+    | Exp (a, b)         -> "(" ^ (hot a) ^ ")<sup>" ^ (hot b) ^ "</sup>"
+    | Mod (a, b)         -> (hot a) ^ " mod " ^ (hot b)
+    | Zero               -> "0"
+    | One                -> "1"
+    | Eq (a, b)          -> "(" ^ (hot a) ^ " = " ^ (hot b) ^ ")"
+    | NotEq (a, b)       -> "(" ^ (hot a) ^ " &ne; " ^ (hot b) ^ ")"
+    | EqMod (a, b, m)    -> "(" ^ (hot a) ^ " &equiv; " ^ (hot b)
+      ^ " (mod " ^ (hot m) ^ "))"
+    | NotEqMod (a, b, m) -> "(" ^ (hot a) ^ " &#8802; " ^ (hot b)
+      ^ " (mod " ^ (hot m) ^ "))"
+    | And (a, b)         -> "(" ^ (hot a) ^ " &and; " ^ (hot b) ^ ")"
+    | Or (a, b)          -> "(" ^ (hot a) ^ " &or; " ^ (hot b) ^ ")"
+    | Return (t)         -> "<b>return</b> " ^ (hot t) ^ " ;\n"
+    | RandomFault (_)    -> "<strong>Random</strong>"
+    | ZeroFault (_)      -> "<strong>Zero</strong>"
   in hot t
 ;;
-
-let html_of_cond c =
-  let rec hoc = function
-    | False -> "0"
-    | True -> "1"
-    | Faulted -> "<b>faulted</b>"
-    | Result -> "<i>result</i>"
-    | Equal (a, b) -> "(" ^ (hoc a) ^ " = " ^ (hoc b) ^ ")"
-    | NotEqual (a, b) -> "(" ^ (hoc a) ^ " &ne; " ^ (hoc b) ^ ")"
-    | EqualMod (a, b, m) -> "(" ^ (hoc a) ^ " &equiv; " ^ (hoc b)
-      ^ " (mod " ^ m ^ "))"
-    | NotEqualMod (a, b, m) -> "(" ^ (hoc a) ^ " &#8802; " ^ (hoc b)
-      ^ " (mod " ^ m ^ "))"
-    | And (a, b) -> "(" ^ (hoc a) ^ " &and; " ^ (hoc b) ^ ")"
-    | Or (a, b) -> "(" ^ (hoc a) ^ " &or; " ^ (hoc b) ^ ")"
-  in hoc c
 
 let start_header html fia =
   Printf.fprintf html "<!DOCTYPE html>\
@@ -76,8 +65,8 @@ let start_header html fia =
   h1 { font-size:1.3em; margin:0 0.39em; }\
   h2 { font-size:0.8em; margin:1em 0.63em 0 0.63em; padding:0.63em 0 0 0;\
        border-top:1px solid #aaa; font-weight:normal; }\
-  h2.success { color: #d22; }\
-  h2.failure { color: #8b2; }\
+  .success { color: #d22; }\
+  .failure { color: #8b2; }\
   pre { font-size:1.2em; padding:0.5em; background-color:#ddd;\
         line-height:150%%; }\
   pre strong { color:#48f; }\
@@ -111,18 +100,21 @@ let print_options html transcient fault_type =
 
 let print_attack_success_condition html cond =
   Printf.fprintf html "<dt>Attack success condition:</dt><dd><p>%s</p></dd>"
-    (html_of_cond cond)
+    (html_of_term cond)
 ;;
 
 let end_header html =
   Printf.fprintf html "</dl>"
 ;;
 
-let print_summary html successful_attacks =
+let print_summary html successful_attacks_count =
   Printf.fprintf html "<dt>Summary</dt><dd><p>\
   <i>Total number of different fault injection:</i> %d.<br />\
-  <i>Total number of successful attack:</i> %d.</p></dd>"
-    !attempt successful_attacks
+  <i>Total number of successful attack:</i> %d \
+  <strong class=\"%s\">%s</strong>.</p></dd>"
+    !attempt successful_attacks_count
+    (if successful_attacks_count = 0 then "failure" else "success")
+    (if successful_attacks_count = 0 then "PROTECTED" else "BROKEN")
 
 let print_term html title term =
   Printf.fprintf html "<dt>%s</dt><dd><pre>%s</pre></dd>"

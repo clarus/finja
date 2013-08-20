@@ -13,10 +13,10 @@
 
 let alpha = ['a'-'z' 'A'-'Z']
 let num = ['0'-'9']
-let ident = alpha (alpha | num | '_' | '\'')*
+let ident = ('_' | '@' | alpha) (alpha | num | '_' | '@' | '\'')*
 
 rule token = parse
-  [' ' '\t']   { token lexbuf }
+| [' ' '\t']   { token lexbuf }
 | '\n'         { newline lexbuf; token lexbuf }
 | "noprop"     { Lnoprop }
 | "prime"      { Lprime }
@@ -42,8 +42,6 @@ rule token = parse
 | "if"         { Lif }
 | "abort with" { Labortwith }
 | "return"     { Lreturn }
-| "@"          { Lat }
-| "_"          { Lunderscore }
 | "/\\"        { Land }
 | "\\/"        { Lor }
 | ident as s   { Lident (s) }
