@@ -115,6 +115,7 @@ let print_summary html successful_attacks_count =
     !attempt successful_attacks_count
     (if successful_attacks_count = 0 then "failure" else "success")
     (if successful_attacks_count = 0 then "PROTECTED" else "BROKEN")
+;;
 
 let print_term html title term =
   Printf.fprintf html "<dt>%s</dt><dd><pre>%s</pre></dd>"
