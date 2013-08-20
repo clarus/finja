@@ -1,6 +1,8 @@
 open Batteries ;;
 open Computation ;;
 
+let attempt = ref 0 ;;
+
 let html_of_term t =
   let rec noprop = function
     | Let (v, NoProp (v'), t) when v = v' -> ", <var>" ^ v ^ "</var>"
@@ -54,12 +56,14 @@ let start_header html fia =
   <style type=\"text/css\">\
   * { margin:0; padding:0; }\
   body { font-size:1em; color:#222; padding:0.5em; font-size:0.8em; }\
-  p { margin:0.5em; }\
+  p { margin:0 0 0.5em 0; }\
   h1 { font-size:1.3em; margin:0 0.39em; }\
-  h2 { font-size:0.8em; margin:1em 0.63em 0 0.63em; padding:0.63em 0 0 0; border-top:1px solid #aaa; font-weight:normal; }\
+  h2 { font-size:0.8em; margin:1em 0.63em 0 0.63em; padding:0.63em 0 0 0;\
+       border-top:1px solid #aaa; font-weight:normal; }\
   h2.success { color: #d22; }\
   h2.failure { color: #8b2; }\
-  pre { font-size:1.2em; padding:0.5em; background-color:#ddd; line-height:150%%; }\
+  pre { font-size:1.2em; padding:0.5em; background-color:#ddd;\
+        line-height:150%%; }\
   pre strong { color:#48f; }\
   dl.attempt { display: none; }\
   dt { font-weight:bold; margin:0.5em 0.5em 0 0.5em; }\
@@ -79,11 +83,14 @@ let start_header html fia =
 " fia fia
 ;;
 
-let print_options html transcient zeroing =
-  Printf.fprintf html "<dl><dt>Options:</dt><dd><p>transcient faults: %s; \
-  fault type: %s.</p></dd>"
+let print_options html transcient fault_type =
+  Printf.fprintf html "<dl><dt>Options:</dt><dd><p><i>transcient faults:</i>\
+  %s<br /><i>fault type:</i> %s.</p></dd>"
     (if transcient then "enabled" else "disabled")
-    (if zeroing then "zeroing" else "randomizing")
+    (match fault_type with
+    | Randomizing -> "randomizing"
+    | Zeroing -> "zeroing"
+    | Both -> "both randomizing and zeroing")
 ;;
 
 let print_attack_success_condition html cond =
@@ -99,11 +106,12 @@ let print_term html title term =
     title (html_of_term term)
 ;;
 
-let print_attempt html n term reduced_term result =
+let print_attempt html term reduced_term result =
   Printf.fprintf html "<h2 class=\"%s\">Attempt %d <a href=\"#attempt%d\" \
   onclick=\"return ec(this.href);\">expand/collapse</a></h2>\
   <dl id=\"attempt%d\" class=\"attempt\">"
-    (if result then "success" else "failure") n n n;
+    (if result then "success" else "failure") !attempt !attempt !attempt;
+  attempt := !attempt + 1;
   print_term html "Faulted computation" term;
   print_term html "Reduced version" reduced_term;
   Printf.fprintf html "<dt>Result</dt><dd><p>%s</p></dd></dl>"

@@ -1,23 +1,25 @@
 open Batteries ;;
+open Computation ;;
 
 let fia_input = ref "" ;;
 let html_output = ref "" ;;
 let lint_only = ref false ;;
-let zeroing = ref false ;;
 let transcient = ref false ;;
+let fault_type = ref Randomizing ;;
 
 let set_fia_input filename =
   fia_input := filename;
   if !html_output = "" then html_output := filename ^ ".html"
 ;;
 
-let usage = "finja [options] filename" ;;
+let usage = "finja [options] <input-file>" ;;
 let options =
-  [ "-o", Arg.Set_string html_output, "HTML report (output file)"
+  [ "-o", Arg.Set_string html_output, "<output-file> HTML report (defaults to input-file.html)"
   ; "-l", Arg.Set lint_only, "Only check syntax"
-  ; "-z", Arg.Set zeroing, "Inject zeroing faults"
-  ; "-r", Arg.Clear zeroing, "Inject randomizing faults"
-  ; "-t", Arg.Set transcient, "Enable transcient faults"
+  ; "-t", Arg.Set transcient, "Enable transcient faults (default is only permanent fault)"
+  ; "-r", Arg.Unit (fun () -> fault_type := Randomizing), "Inject randomizing faults (default)"
+  ; "-z", Arg.Unit (fun () -> fault_type := Zeroing), "Inject zeroing faults"
+  ; "-b", Arg.Unit (fun () -> fault_type := Both), "Inject both types of faults"
   ] ;;
 
 
@@ -51,23 +53,29 @@ let () =
 
       let report = File.open_out !html_output in
       Html.start_header report !fia_input;
-      Html.print_options report !transcient !zeroing;
+      Html.print_options report !transcient !fault_type;
       Html.print_term report "Computation" term;
       Html.print_attack_success_condition report cond;
       Html.print_term report "Reduced computation" Computation.Zero;
       Html.end_header report;
 
-      let attempt = FaultInjection.inject_fault term !transcient !zeroing in
-      let rec loop i =
+      let attempt = FaultInjection.inject_fault term !transcient in
+      let rec loop i prev =
         try
-          let t' = attempt i in
-          if t' <> term then begin
-            Html.print_attempt report i t' Computation.Zero false;
-            loop (i + 1)
+          let ftype = match !fault_type with
+            | Both -> if i = prev then Zeroing else Randomizing
+            | _ -> !fault_type
+          in
+          let faulted_term = attempt ftype i in
+          if faulted_term <> term then begin
+            let reduced_fterm = Zero in
+            let result = false in
+            Html.print_attempt report faulted_term reduced_fterm result;
+            loop (if !fault_type = Both && i != prev then i else i + 1) i
           end
         with FaultInjection.Non_faultable ->
-          loop (i + 1)
-      in loop 1;
+          loop (i + 1) i
+      in loop 1 0;
 
       Html.close_html report;
       IO.close_out report;

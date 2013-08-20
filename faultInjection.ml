@@ -2,8 +2,9 @@ open Batteries ;;
 open Computation ;;
 
 exception Non_faultable ;;
+exception Error ;;
 
-let inject_fault term transcient zeroing tentative =
+let inject_fault term transcient fault_type tentative =
   let counter = ref (-1) in
   let rec inj inc t =
     if inc then counter := !counter + 1;
@@ -13,7 +14,12 @@ let inject_fault term transcient zeroing tentative =
       | Var _ when not transcient -> raise Non_faultable
       | Zero when not transcient -> raise Non_faultable
       | One when not transcient -> raise Non_faultable
-      | _ -> if zeroing then ZeroFault (tentative) else RandomFault (tentative)
+      | _ -> begin
+        match fault_type with
+        | Randomizing -> RandomFault (tentative)
+        | Zeroing -> ZeroFault (tentative)
+        | Both -> raise Error
+      end
     else
       match t with
       | Let (v, e, t) -> Let (v, inj true e, inj false t)

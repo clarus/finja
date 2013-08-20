@@ -51,3 +51,8 @@ type attack_condition =
 | False
 
 type description = term_p * attack_condition
+
+type fault_type =
+| Randomizing
+| Zeroing
+| Both
