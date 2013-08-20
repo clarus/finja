@@ -51,3 +51,4 @@ let check_term pterm =
     | PEqMod (a, b, m) -> EqMod (chk env a, chk env b, chk env m)
     | PNotEqMod (a, b, m) -> NotEqMod (chk env a, chk env b, chk env m)
   in chk StrSet.empty pterm
+;;

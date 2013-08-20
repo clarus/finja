@@ -24,12 +24,12 @@ let options =
 
 
 let location startp endp =
-  let l = startp.Lexing.pos_lnum
-  in let sc = startp.Lexing.pos_cnum - startp.Lexing.pos_bol
-  in let ec = endp.Lexing.pos_cnum - endp.Lexing.pos_bol
-  in Printf.eprintf "File \"%s\", line %d, characters %d-%d:\n" !fia_input l sc ec
+  let l = startp.Lexing.pos_lnum in
+  let sc = startp.Lexing.pos_cnum - startp.Lexing.pos_bol in
+  let ec = endp.Lexing.pos_cnum - endp.Lexing.pos_bol in
+  Printf.eprintf "File \"%s\", line %d, characters %d-%d:\n"
+    !fia_input l sc ec
 ;;
-
 
 let () =
   Arg.parse options set_fia_input usage;
