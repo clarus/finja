@@ -101,7 +101,7 @@ let start_header html fia =
 
 let print_options html transcient fault_type =
   Printf.fprintf html "<dl><dt>Options:</dt><dd><p><i>transcient faults:</i>\
-  %s<br /><i>fault type:</i> %s.</p></dd>"
+  %s.<br /><i>fault type:</i> %s.</p></dd>"
     (if transcient then "enabled" else "disabled")
     (match fault_type with
     | Randomizing -> "randomizing"
@@ -117,6 +117,12 @@ let print_attack_success_condition html cond =
 let end_header html =
   Printf.fprintf html "</dl>"
 ;;
+
+let print_summary html successful_attacks =
+  Printf.fprintf html "<dt>Summary</dt><dd><p>\
+  <i>Total number of different fault injection:</i> %d.<br />\
+  <i>Total number of successful attack:</i> %d.</p></dd>"
+    !attempt successful_attacks
 
 let print_term html title term =
   Printf.fprintf html "<dt>%s</dt><dd><pre>%s</pre></dd>"

@@ -52,35 +52,42 @@ let () =
 
       if !lint_only then exit 0;
 
-      let report = File.open_out !html_output in
-      Html.start_header report !fia_input;
-      Html.print_options report !transcient !fault_type;
-      Html.print_term report "Computation" term;
-      Html.print_attack_success_condition report cond;
-      Html.print_term report "Reduced computation" reduced_term;
-      Html.end_header report;
+      let (tmp, tmpname) = File.open_temporary_out () in
 
       let attempt = FaultInjection.inject_fault term !transcient in
-      let rec loop i prev =
-        try
-          let ftype = match !fault_type with
-            | Both -> if i = prev then Zeroing else Randomizing
-            | _ -> !fault_type
-          in
-          let faulted_term = attempt ftype i in
-          if faulted_term <> term then begin
-            let reduced_fterm = Reduction.reduce faulted_term in
-            let result = Analysis.check cond reduced_term reduced_fterm in
-            Html.print_attempt report faulted_term reduced_fterm result;
-            loop (if !fault_type = Both && i != prev then i else i + 1) i
-          end
-        with FaultInjection.Non_faultable ->
-          loop (i + 1) i
-      in loop 1 0;
+      let successful_attacks =
+        let rec loop i prev success =
+          try
+            let ftype = match !fault_type with
+              | Both -> if i = prev then Zeroing else Randomizing
+              | _ -> !fault_type
+            in
+            let faulted_term = attempt ftype i in
+            if faulted_term <> term then
+              let reduced_fterm = Reduction.reduce faulted_term in
+              let result = Analysis.check cond reduced_term reduced_fterm in
+              begin
+                Html.print_attempt tmp faulted_term reduced_fterm result;
+                loop (if !fault_type = Both && i != prev then i else i + 1) i
+                  (if result then success + 1 else success)
+              end
+            else success
+          with FaultInjection.Non_faultable ->
+            loop (i + 1) i success
+        in loop 1 0 0;
+      in
+      IO.close_out tmp;
 
-      Html.close_html report;
-      IO.close_out report;
-      ()
+      File.with_file_out !html_output (fun report ->
+        Html.start_header report !fia_input;
+        Html.print_options report !transcient !fault_type;
+        Html.print_term report "Computation" term;
+        Html.print_attack_success_condition report cond;
+        Html.print_term report "Reduced computation" reduced_term;
+        Html.print_summary report successful_attacks;
+        Html.end_header report;
+        Enum.iter (Printf.fprintf report "%s") (File.lines_of tmpname);
+        Html.close_html report)
     end
   with
   | Lexer.Error c ->
