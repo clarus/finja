@@ -49,6 +49,15 @@ type term =
 
 type attack_condition =
 | False
+| True
+| Faulted
+| Result
+| Equal of attack_condition * attack_condition
+| NotEqual of attack_condition * attack_condition
+| EqualMod of attack_condition * attack_condition * string
+| NotEqualMod of attack_condition * attack_condition * string
+| And of attack_condition * attack_condition
+| Or of attack_condition * attack_condition
 
 type description = term_p * attack_condition
 

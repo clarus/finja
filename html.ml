@@ -48,6 +48,22 @@ let html_of_term t =
   in hot t
 ;;
 
+let html_of_cond c =
+  let rec hoc = function
+    | False -> "0"
+    | True -> "1"
+    | Faulted -> "<b>faulted</b>"
+    | Result -> "<i>result</i>"
+    | Equal (a, b) -> "(" ^ (hoc a) ^ " = " ^ (hoc b) ^ ")"
+    | NotEqual (a, b) -> "(" ^ (hoc a) ^ " &ne; " ^ (hoc b) ^ ")"
+    | EqualMod (a, b, m) -> "(" ^ (hoc a) ^ " &equiv; " ^ (hoc b)
+      ^ " (mod " ^ m ^ "))"
+    | NotEqualMod (a, b, m) -> "(" ^ (hoc a) ^ " &#8802; " ^ (hoc b)
+      ^ " (mod " ^ m ^ "))"
+    | And (a, b) -> "(" ^ (hoc a) ^ " &and; " ^ (hoc b) ^ ")"
+    | Or (a, b) -> "(" ^ (hoc a) ^ " &or; " ^ (hoc b) ^ ")"
+  in hoc c
+
 let start_header html fia =
   Printf.fprintf html "<!DOCTYPE html>\
 <html>\
@@ -94,7 +110,8 @@ let print_options html transcient fault_type =
 ;;
 
 let print_attack_success_condition html cond =
-  Printf.fprintf html "<dt>Attack success condition:</dt><dd><p>TODO</p></dd>"
+  Printf.fprintf html "<dt>Attack success condition:</dt><dd><p>%s</p></dd>"
+    (html_of_cond cond)
 ;;
 
 let end_header html =

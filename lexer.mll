@@ -42,9 +42,10 @@ rule token = parse
 | "if"         { Lif }
 | "abort with" { Labortwith }
 | "return"     { Lreturn }
-(* | "@"          { Lat } *)
-(* | "/"          { Lslash } *)
-(* | "\\"         { Lbackslash } *)
+| "@"          { Lat }
+| "_"          { Lunderscore }
+| "/\\"        { Land }
+| "\\/"        { Lor }
 | ident as s   { Lident (s) }
 | _ as c       { raise (Error c) }
 | eof          { Leof }

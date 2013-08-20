@@ -45,3 +45,6 @@ let inject_fault term transcient fault_type tentative =
       | NotEqMod (a, b, m) -> NotEqMod (inj true a, inj true b, inj true m)
   in inj true term
 ;;
+
+
+(* TODO permanent faulting actually needs state? *)

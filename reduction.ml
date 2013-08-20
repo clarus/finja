@@ -1,6 +1,6 @@
 open Batteries ;;
-
-
+open Computation ;;
 
 let reduce term =
-  term
+  Zero
+;;

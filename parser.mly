@@ -15,16 +15,20 @@
 %token Loparen Lcparen
 %token Lif Labortwith
 %token Lobracket Lcbracket
-%token Lpercent
-(* %token Lslash Lbackslash *)
-(* %token Lat *)
 %token Lreturn
+%token Lpercent
+%token Land Lor
+%token Lat Lunderscore
 %token Leof
 
 %left Lplus Lminus
 %left Lcirc Lmod
 %left Lstar
+%left Lor
+%left Land
+%nonassoc Lequal Lnoteq
 %nonassoc uminus
+%left Lcbracket
 
 %start desc
 
@@ -112,5 +116,19 @@ cond:
 ;
 
 attack:
+| Loparen; a = attack; Lcparen { a }
 | Lzero { False }
+| Lone { True }
+| Lat { Faulted }
+| Lunderscore { Result }
+| a = attack; Land; b = attack { And (a, b) }
+| a = attack; Lor; b = attack { Or (a, b) }
+| a = attack; Lequal; b = attack { Equal (a, b) }
+| a = attack; Lnoteq; b = attack { NotEqual (a, b) }
+| a = attack; Lequal; Lobracket; i = Lident; Lcbracket; b = attack {
+  EqualMod (a, b, i)
+}
+| a = attack; Lnoteq; Lobracket; i = Lident; Lcbracket; b = attack {
+  NotEqualMod (a, b, i)
+}
 ;

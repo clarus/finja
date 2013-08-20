@@ -47,7 +47,8 @@ let () =
       IO.close_in fia;
 
       let term = Sanity.check_term (fst desc) in
-      let cond = (snd desc) in
+      let reduced_term = Reduction.reduce term in
+      let cond = snd desc in
 
       if !lint_only then exit 0;
 
@@ -56,7 +57,7 @@ let () =
       Html.print_options report !transcient !fault_type;
       Html.print_term report "Computation" term;
       Html.print_attack_success_condition report cond;
-      Html.print_term report "Reduced computation" Computation.Zero;
+      Html.print_term report "Reduced computation" reduced_term;
       Html.end_header report;
 
       let attempt = FaultInjection.inject_fault term !transcient in
@@ -68,8 +69,8 @@ let () =
           in
           let faulted_term = attempt ftype i in
           if faulted_term <> term then begin
-            let reduced_fterm = Zero in
-            let result = false in
+            let reduced_fterm = Reduction.reduce faulted_term in
+            let result = Analysis.check cond reduced_term reduced_fterm in
             Html.print_attempt report faulted_term reduced_fterm result;
             loop (if !fault_type = Both && i != prev then i else i + 1) i
           end
