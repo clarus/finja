@@ -70,8 +70,7 @@ let () =
                 (if result then success + 1 else success)
             end
             else success
-          with FaultInjection.Non_faultable ->
-            loop (i + 1) i success
+          with FaultInjection.Non_faultable -> loop (i + 1) i success
         in loop 1 0 0;
       in
       IO.close_out tmp;
@@ -88,7 +87,7 @@ let () =
         Html.close_html report)
     end
   with
-  | Lexer.Error c ->
+  | Lexer.Error (c) ->
     location (Lexing.lexeme_start_p buf) (Lexing.lexeme_end_p buf);
     Printf.eprintf "Unexpected char '%c'.\n" c
   | Parser.Error ->
