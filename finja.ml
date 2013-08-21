@@ -64,7 +64,7 @@ let () =
             in
             let (faulted_term, faulted_subterm) = attempt ftype i in
             if faulted_term <> term then begin
-              let result = Analysis.check_attack env cond term faulted_term in
+              let result = Analysis.check_attack env cond faulted_term in
               Html.print_attempt tmp faulted_term faulted_subterm result;
               loop (if !fault_type = Both && i != prev then i else i + 1) i
                 (if result then success + 1 else success)
