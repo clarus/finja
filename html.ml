@@ -36,7 +36,7 @@ let html_of_term t =
         (hot (List.hd l)) (List.tl l)
     | Inv (t)            -> "(" ^ (hot t) ^ ")<sup>-1</sup>"
     | Exp (a, b)         -> "(" ^ (hot a) ^ ")<sup>" ^ (hot b) ^ "</sup>"
-    | Mod (a, b)         -> (hot a) ^ " mod " ^ (hot b)
+    | Mod (a, b)         -> "(" ^ (hot a) ^ ") mod " ^ (hot b)
     | Zero               -> "0"
     | One                -> "1"
     | Eq (a, b)          -> "(" ^ (hot a) ^ " = " ^ (hot b) ^ ")"
@@ -67,7 +67,9 @@ let start_header html fia =
   h2 a { display:block; margin:0 0.63em; padding:0.63em 0 1em 0;\
          border-top:1px solid #aaa; font-weight:normal; color:inherit;\
          text-decoration:none; }\
-  h2 a span { float:right; font-size:1em; color:#aaa; text-decoration:underline; }\
+  h2 code { margin: 0 0 0 1em; font-size:1.3em; color:#333; }\
+  h2 a span { float:right; font-size:1em; color:#aaa;\
+              text-decoration:underline; }\
   .success { color: #d22; }\
   .failure { color: #8b2; }\
   pre { font-size:1.2em; padding:0.5em; background-color:#ddd;\
@@ -91,7 +93,7 @@ let start_header html fia =
 ;;
 
 let print_options html transcient fault_type =
-  Printf.fprintf html "<dl><dt>Options:</dt><dd><p><i>transcient faults:</i>\
+  Printf.fprintf html "<dl><dt>Options:</dt><dd><p><i>transcient faults:</i> \
   %s.<br /><i>fault type:</i> %s.</p></dd>"
     (if transcient then "enabled" else "disabled")
     (match fault_type with
@@ -110,8 +112,8 @@ let end_header html =
 ;;
 
 let print_summary html successful_attacks_count =
-  Printf.fprintf html "<dt>Summary <strong class=\"%s\">%s</strong></dt><dd><p>\
-  <i>Total number of different fault injection:</i> %d.<br />\
+  Printf.fprintf html "<dt>Summary <strong class=\"%s\">%s</strong></dt><dd>\
+  <p><i>Total number of different fault injection:</i> %d.<br />\
   <i>Total number of successful attack:</i> %d.</p></dd>"
     (if successful_attacks_count = 0 then "failure" else "success")
     (if successful_attacks_count = 0 then "PROTECTED" else "BROKEN")
@@ -123,14 +125,14 @@ let print_term html title term =
     title (html_of_term term)
 ;;
 
-let print_attempt html term reduced_term result =
+let print_attempt html term faulted_subterm result =
   Printf.fprintf html "<h2 class=\"%s\"><a href=\"#attempt%d\" \
-  onclick=\"return ec(this.href);\">Attempt %d\
+  onclick=\"return ec(this.href);\">Attempt %d <code>%s</code>\
   <span>expand/collapse</span></a></h2><dl id=\"attempt%d\" class=\"attempt\">"
-    (if result then "success" else "failure") !attempt !attempt !attempt;
+    (if result then "success" else "failure") !attempt !attempt
+    (html_of_term faulted_subterm) !attempt;
   attempt := !attempt + 1;
   print_term html "Faulted computation" term;
-  print_term html "Reduced version" reduced_term;
   Printf.fprintf html "<dt>Result</dt><dd><p>%s</p></dd></dl>"
     (if result then "Attack successful." else "Harmless fault injection.");
 ;;

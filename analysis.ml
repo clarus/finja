@@ -1,7 +1,7 @@
 open Batteries ;;
 open Computation ;;
 
-let check_attack cond term faulted_term =
-  let test = Let ("_", term, Let ("@", faulted_term, If (cond, One, Zero))) in
-  Reduction.reduce test = Zero
+let check_attack env cond term faulted_term =
+  let check = Let ("@", faulted_term, If (cond, One, Zero)) in
+  Reduction.red env check = One
 ;;

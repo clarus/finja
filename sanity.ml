@@ -11,7 +11,8 @@ let e pterm = pterm.epos ;;
 
 let check desc =
 
-  let cond_env = ref (StrSet.add "_" (StrSet.add "@" StrSet.empty)) in
+  let env = StrSet.add "@" StrSet.empty in
+  let cond_env = ref env in
 
   let rec flatten_sum = function
     | { term = PSum (s) ; spos = _ ; epos = _ } :: tl ->
@@ -29,7 +30,7 @@ let check desc =
     match t pt with
     | PLet (v, x, t) ->
       if StrSet.mem v env then
-        raise (Error ("Variable " ^ v ^ " is defined.", s pt, e pt));
+        raise (Error ("Variable " ^ v ^ " is already defined.", s pt, e pt));
       cond_env := StrSet.add v !cond_env;
       Let (v, chk env x, chk (StrSet.add v env) t)
     | PVar (v) ->
@@ -56,7 +57,7 @@ let check desc =
     | POr (a, b)          -> Or (chk env a, chk env b)
     | PReturn (t)         -> Return (chk env t)
   in
-  let term = chk StrSet.empty (fst desc) in
+  let term = chk env (fst desc) in
   let cond = chk !cond_env (snd desc) in
   term, cond
 ;;

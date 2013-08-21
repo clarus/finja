@@ -1,3 +1,4 @@
+noprop error ;
 noprop m, d ;
 prime p, q, r ;
 
@@ -22,4 +23,4 @@ return S ;
 
 %
 
-0
+S != @ /\ ( S =[p] @ \/ S =[q] @ )

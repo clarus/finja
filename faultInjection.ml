@@ -2,10 +2,11 @@ open Batteries ;;
 open Computation ;;
 
 exception Non_faultable ;;
-exception Error ;;
+exception Should_not_happen ;;
 
 let inject_fault term transcient fault_type tentative =
   let counter = ref (-1) in
+  let faulted_subterm = ref Zero in
   let rec inj inc t =
     if inc then counter := !counter + 1;
     if inc && !counter = tentative then
@@ -16,9 +17,9 @@ let inject_fault term transcient fault_type tentative =
       | One when not transcient   -> raise Non_faultable
       | _ -> begin
         match fault_type with
-        | Randomizing -> RandomFault (tentative)
-        | Zeroing     -> ZeroFault (tentative)
-        | Both        -> raise Error
+        | Randomizing -> faulted_subterm := t; RandomFault (tentative)
+        | Zeroing     -> faulted_subterm := t; ZeroFault (tentative)
+        | Both        -> raise Should_not_happen
       end
     else
       match t with
@@ -45,8 +46,5 @@ let inject_fault term transcient fault_type tentative =
       | Return (t)         -> Return (inj true t)
       | RandomFault (f)    -> RandomFault (f)
       | ZeroFault (f)      -> ZeroFault (f)
-  in inj true term
+  in inj true term, !faulted_subterm
 ;;
-
-
-(* TODO permanent faulting actually needs state? *)
