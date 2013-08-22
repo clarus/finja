@@ -1,0 +1,10 @@
+See http://pablo.rauzy.name/sensi/finja.html
+
+INTSALL
+=======
+
+- finja depends on OCaml and Batteries.
+
+- Compile with:
+
+    ocamlbuild -use-ocamlfind finja.native
