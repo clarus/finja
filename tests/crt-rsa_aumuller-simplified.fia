@@ -1,0 +1,40 @@
+noprop error ;
+noprop m, e, r1, r2 ;
+prime p, q, t ;
+
+dp := { e^-1 mod (p-1) } ;
+dq := { e^-1 mod (p-1) } ;
+iq := { q^-1 mod p } ;
+
+pp := p * t ;
+dpp := dp + r1 * (p-1) ;
+Spp := m^dpp mod pp ;
+
+if dpp !=[p-1] dp abort with error ;
+
+qq := q * t ;
+dqq := dq + r2 * (q-1) ;
+Sqq := m^dqq mod qq ;
+
+if dqq !=[q-1] dq abort with error ;
+
+Sp := Spp mod p ;
+Sq := Sqq mod q ;
+
+S := Sq + (q * (iq * (Sp - Sq) mod p)) ;
+
+if S !=[p] Spp abort with error ;
+if S !=[q] Sqq abort with error ;
+
+Spt := Spp mod t ;
+Sqt := Sqq mod t ;
+dpt := dpp mod (t-1) ;
+dqt := dqq mod (t-1) ;
+
+if Spt^dqt !=[t] Sqt^dpt abort with error ;
+
+return S ;
+
+%
+
+S != @ /\ ( S =[p] @ \/ S =[q] @ )

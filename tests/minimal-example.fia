@@ -1,0 +1,9 @@
+noprop a, b, c ;
+
+t := a + b * c ;
+
+return t ;
+
+%
+
+@ !=[b] a
