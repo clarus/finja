@@ -13,7 +13,7 @@
 
 let alpha = [ 'a'-'z' 'A'-'Z' ]
 let num = [ '0'-'9' ]
-let ident = '@' | ( alpha ( alpha | num | '_' | '@' | '\'' )* )
+let ident = '_' | '@' | ( alpha ( alpha | num | '_' | '@' | '\'' )* )
 
 rule token = parse
 | [' ' '\t']   { token lexbuf }

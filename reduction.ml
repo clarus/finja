@@ -66,40 +66,40 @@ and reduce_prod env l =
     | hd :: tl ->
       begin
         match hd with
-        | Zero            -> [ Zero ]
-        | ZeroFault (_)   -> [ Zero ]
-        | RandomFault (f) -> [ RandomFault (f) ]
-        | _               ->
+        | Zero          -> [ Zero ]
+        | ZeroFault (_) -> [ Zero ]
+        | _             ->
           if red env (Inv (hd)) = e then before @ tl
           else red_p e (before @ [ hd ]) tl
       end
     | [] -> e :: before
   in match l with
-  | Zero :: _            -> [ Zero ]
-  | ZeroFault (_) :: _   -> [ Zero ]
-  | RandomFault (f) :: _ -> [ RandomFault (f) ]
-  | One :: tl            -> reduce_prod env tl
-  | hd :: tl             -> red_p hd [] (reduce_prod env tl)
-  | []                   -> []
+  | Zero :: _          -> [ Zero ]
+  | ZeroFault (_) :: _ -> [ Zero ]
+  | One :: tl          -> reduce_prod env tl
+  | hd :: tl           -> red_p hd [] (reduce_prod env tl)
+  | []                 -> []
 
 and reduce_mod env m t =
   let rec red_mod env m t =
     if t = m then Zero
     else match t with
     | Let (v, e, t)      ->
-      let env' = (StrMap.add v (reduce_mod env m e) env) in
-      reduce_mod env' m e
-    | Var (v)              -> reduce_mod env m (StrMap.find v env)
-    | NoProp (v)           -> NoProp (v)
-    | Prime (v)            -> Prime (v)
-    | Protected (t)        -> reduce_mod env m t
-    | If (c, t, e)         ->
-      reduce_mod env m (if reduce_cond_mod env m c then t else e)
-    | Sum (l)              -> Sum (List.map (reduce_mod env m) l)
-    | Opp (t)              -> Opp (reduce_mod env m t)
-    | Prod (l)             -> Prod (List.map (reduce_mod env m) l)
-    | Inv (t)              -> Inv (reduce_mod env m t)
-    | Exp (a, b)           ->
+      reduce_mod (StrMap.add v (reduce_mod env m e) env) m e
+    | Var (v)            -> reduce_mod env m (StrMap.find v env)
+    | NoProp (v)         -> NoProp (v)
+    | Prime (v)          -> Prime (v)
+    | Protected (t)      -> reduce_mod env m t
+    | If (c, t, e)       ->
+      if reduce_cond_mod env m c
+      then let r = reduce_mod env m t in
+           env_at_return := StrMap.add "_" r env; r
+      else reduce_mod env m e
+    | Sum (l)            -> Sum (List.map (reduce_mod env m) l)
+    | Opp (t)            -> Opp (reduce_mod env m t)
+    | Prod (l)           -> Prod (List.map (reduce_mod env m) l)
+    | Inv (t)            -> Inv (reduce_mod env m t)
+    | Exp (a, b)         ->
       let b' = red env b in
       begin
         match b' with
@@ -108,21 +108,24 @@ and reduce_mod env m t =
             when p = m -> One
         | _            -> Exp (reduce_mod env m a, Mod (b', phi m))
       end
-    | Mod (a, b)           ->
+    | Mod (a, b)         ->
       let m' = red env (quotient (red env b) m) in
       if m' = m then reduce_mod env m a
       else red env (Mod (a, m'))
-    | Zero                 -> Zero
-    | One                  -> if m = One then Zero else One
-    | Eq (a, b)            -> raise Should_not_happen
-    | NotEq (a, b)         -> raise Should_not_happen
-    | EqMod (a, b, m)      -> raise Should_not_happen
-    | NotEqMod (a, b, m)   -> raise Should_not_happen
-    | And (a, b)           -> raise Should_not_happen
-    | Or (a, b)            -> raise Should_not_happen
-    | Return (t)           -> env_at_return := env; reduce_mod env m t
-    | RandomFault (_) as t -> if m = t then Zero else t
-    | ZeroFault (_)        -> Zero
+    | Zero               -> Zero
+    | One                -> if m = One then Zero else One
+    | Eq (a, b)          -> raise Should_not_happen
+    | NotEq (a, b)       -> raise Should_not_happen
+    | EqMod (a, b, m)    -> raise Should_not_happen
+    | NotEqMod (a, b, m) -> raise Should_not_happen
+    | And (a, b)         -> raise Should_not_happen
+    | Or (a, b)          -> raise Should_not_happen
+    | Return (t)         ->
+      let r = reduce_mod env m t in
+      env_at_return := StrMap.add "_" r env;
+      r
+    | RandomFault (_)    -> if m = t then Zero else t
+    | ZeroFault (_)      -> Zero
   in red env (red_mod env (red env m) (red env t))
 
 and reduce_cond_mod env m = function
@@ -154,8 +157,10 @@ and red env term =
   | NoProp (v)         -> NoProp (v)
   | Prime (v)          -> Prime (v)
   | Protected (t)      -> red env t
-  | If (c, t, e)       -> if reduce_cond env c
-    then red env t else red env e
+  | If (c, t, e)       ->
+    if reduce_cond env c
+    then let r = red env t in env_at_return := StrMap.add "_" r env; r
+    else red env e
   | Sum (l)            ->
     let l' = List.stable_sort compare
       (reduce_sum env
@@ -230,7 +235,10 @@ and red env term =
   | NotEqMod (a, b, m) -> raise Should_not_happen
   | And (a, b)         -> raise Should_not_happen
   | Or (a, b)          -> raise Should_not_happen
-  | Return (t)         -> env_at_return := env; red env t
+  | Return (t)         ->
+    let r = red env t in
+    env_at_return := StrMap.add "_" r env;
+    r
   | RandomFault (f)    -> RandomFault (f)
   | ZeroFault (f)      -> Zero
 ;;

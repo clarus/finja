@@ -11,7 +11,7 @@ let e pterm = pterm.epos ;;
 
 let check desc =
 
-  let env = StrSet.add "@" StrSet.empty in
+  let env = StrSet.add "_" (StrSet.add "@" StrSet.empty) in
   let cond_env = ref env in
 
   let rec flatten_sum = function

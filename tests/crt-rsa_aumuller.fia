@@ -10,17 +10,13 @@ pp := p * t ;
 dpp := dp + r1 * (p-1) ;
 Spp := m^dpp mod pp ;
 
-if pp !=[p] 0 abort with error ;
-
-if dpp !=[p-1] dp abort with error ;
+if pp !=[p] 0 \/ dpp !=[p-1] dp abort with error ;
 
 qq := q * t ;
 dqq := dq + r2 * (q-1) ;
 Sqq := m^dqq mod qq ;
 
-if qq !=[q] 0 abort with error ;
-
-if dqq !=[q-1] dq abort with error ;
+if qq !=[q] 0 \/ dqq !=[q-1] dq abort with error ;
 
 Sp := Spp mod p ;
 Sq := Sqq mod q ;
