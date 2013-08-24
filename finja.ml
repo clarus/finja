@@ -4,7 +4,7 @@ open Computation ;;
 let fia_input = ref "" ;;
 let html_output = ref "" ;;
 let lint_only = ref false ;;
-let transcient = ref false ;;
+let transient = ref false ;;
 let fault_type = ref Randomizing ;;
 
 let set_fia_input filename =
@@ -16,7 +16,7 @@ let usage = "finja [options] <input-file>" ;;
 let options =
   [ "-o", Arg.Set_string html_output, "<output-file> HTML report (defaults to input-file.html)"
   ; "-l", Arg.Set lint_only, "Only check syntax"
-  ; "-t", Arg.Set transcient, "Enable transcient faults (default is only permanent fault)"
+  ; "-t", Arg.Set transient, "Enable transient faults (default is only permanent fault)"
   ; "-r", Arg.Unit (fun () -> fault_type := Randomizing), "Inject randomizing faults (default)"
   ; "-z", Arg.Unit (fun () -> fault_type := Zeroing), "Inject zeroing faults"
   ; "-b", Arg.Unit (fun () -> fault_type := Both), "Inject both types of faults"
@@ -54,7 +54,7 @@ let () =
 
       let tmp, tmpname = File.open_temporary_out () in
 
-      let attempt = FaultInjection.inject_fault term !transcient in
+      let attempt = FaultInjection.inject_fault term !transient in
       let successful_attacks_count =
         let rec loop i prev success =
           try
@@ -77,7 +77,7 @@ let () =
 
       File.with_file_out !html_output (fun report ->
         Html.start_header report !fia_input;
-        Html.print_options report !transcient !fault_type;
+        Html.print_options report !transient !fault_type;
         Html.print_summary report successful_attacks_count;
         Html.print_term report "Computation" term;
         Html.print_attack_success_condition report cond;

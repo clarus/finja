@@ -92,10 +92,10 @@ let start_header html fia =
     fia fia
 ;;
 
-let print_options html transcient fault_type =
-  Printf.fprintf html "<dl><dt>Options:</dt><dd><p><i>transcient faults:</i> \
+let print_options html transient fault_type =
+  Printf.fprintf html "<dl><dt>Options:</dt><dd><p><i>transient faults:</i> \
   %s.<br /><i>fault type:</i> %s.</p></dd>"
-    (if transcient then "enabled" else "disabled")
+    (if transient then "enabled" else "disabled")
     (match fault_type with
     | Randomizing -> "randomizing"
     | Zeroing -> "zeroing"

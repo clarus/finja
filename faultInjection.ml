@@ -4,17 +4,17 @@ open Computation ;;
 exception Non_faultable ;;
 exception Should_not_happen ;;
 
-let inject_fault term transcient fault_type tentative =
+let inject_fault term transient fault_type tentative =
   let counter = ref (-1) in
   let faulted_subterm = ref Zero in
   let rec inj inc t =
     if inc then counter := !counter + 1;
     if inc && !counter = tentative then
       match t with
-      | Protected _               -> raise Non_faultable
-      | Var _ when not transcient -> raise Non_faultable
-      | Zero when not transcient  -> raise Non_faultable
-      | One when not transcient   -> raise Non_faultable
+      | Protected _              -> raise Non_faultable
+      | Var _ when not transient -> raise Non_faultable
+      | Zero when not transient  -> raise Non_faultable
+      | One when not transient   -> raise Non_faultable
       | _ -> begin
         match fault_type with
         | Randomizing -> faulted_subterm := t; RandomFault (tentative)
