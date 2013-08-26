@@ -3,7 +3,11 @@ See http://pablo.rauzy.name/sensi/finja.html
 INTSALL
 =======
 
-- finja depends on OCaml and Batteries.
+- finja depends on:
+
+  - OCaml <http://www.ocaml.org/>
+  - Batteries <http://batteries.forge.ocamlcore.org/>
+  - menhir <http://gallium.inria.fr/~fpottier/menhir/>
 
 - Compile with:
 
