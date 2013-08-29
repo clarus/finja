@@ -50,6 +50,7 @@ let html_of_term t =
     | Return (t)         -> "<b>return</b> " ^ (hot t) ^ " ;\n"
     | RandomFault (_)    -> "<strong>Random</strong>"
     | ZeroFault (_)      -> "<strong>Zero</strong>"
+    | Nil                -> "<small>nil</small>"
   in hot t
 ;;
 

@@ -25,6 +25,35 @@ and pterm =
 | PAnd       of term_p * term_p
 | POr        of term_p * term_p
 | PReturn    of term_p
+;;
+
+type term_a = int * aterm
+and aterm =
+| ALet         of string * term_a * term_a
+| AVar         of string
+| ANoProp      of string
+| APrime       of string
+| AProtected   of term_a
+| AIf          of term_a * term_a * term_a
+| ASum         of term_a list
+| AOpp         of term_a
+| AProd        of term_a list
+| AInv         of term_a
+| AExp         of term_a * term_a
+| AMod         of term_a * term_a
+| AZero
+| AOne
+| AEq          of term_a * term_a
+| ANotEq       of term_a * term_a
+| AEqMod       of term_a * term_a * term_a
+| ANotEqMod    of term_a * term_a * term_a
+| AAnd         of term_a * term_a
+| AOr          of term_a * term_a
+| AReturn      of term_a
+| ARandomFault of int
+| AZeroFault   of int
+| ANil
+;;
 
 type term =
 | Let         of string * term * term
@@ -50,10 +79,13 @@ type term =
 | Return      of term
 | RandomFault of int
 | ZeroFault   of int
+| Nil
+;;
 
-type description = term_p * term_p
+type description = term_p * term_p ;;
 
 type fault_type =
 | Randomizing
 | Zeroing
 | Both
+;;
