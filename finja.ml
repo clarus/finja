@@ -86,7 +86,7 @@ let () =
       Printf.eprintf "Syntax error.\n"
     | Sanity.Error (m, s, e) ->
       location s e;
-      Printf.eprintf "%s\n"
+      Printf.eprintf "%s\n" m
   end;
   exit 1
 ;;
