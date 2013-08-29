@@ -3,7 +3,7 @@ open Computation ;;
 
 exception Error of string * Lexing.position * Lexing.position ;;
 
-module StrSet = Set.Make(String) ;;
+module Env = Set.Make(String) ;;
 
 let t pterm = pterm.term ;;
 let s pterm = pterm.spos ;;
@@ -11,7 +11,7 @@ let e pterm = pterm.epos ;;
 
 let check desc =
 
-  let env = StrSet.add "_" (StrSet.add "@" StrSet.empty) in
+  let env = Env.add "_" (Env.add "@" Env.empty) in
   let cond_env = ref env in
 
   let rec flatten_sum = function
@@ -29,12 +29,12 @@ let check desc =
   and chk env pt =
     match t pt with
     | PLet (v, x, t) ->
-      if StrSet.mem v env then
+      if Env.mem v env then
         raise (Error ("Variable " ^ v ^ " is already defined.", s pt, e pt));
-      cond_env := StrSet.add v !cond_env;
-      Let (v, chk env x, chk (StrSet.add v env) t)
+      cond_env := Env.add v !cond_env;
+      Let (v, chk env x, chk (Env.add v env) t)
     | PVar (v) ->
-      if not (StrSet.mem v env) then
+      if not (Env.mem v env) then
         raise (Error ("Variable " ^ v ^ " does not exists.", s pt, e pt));
       Var (v)
     | PNoProp (v)         -> NoProp (v)

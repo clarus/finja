@@ -5,9 +5,9 @@ exception Faulted of term ;;
 exception Not_prime of term ;;
 exception Should_not_happen ;;
 
-module StrMap = Map.Make(String) ;;
+module Env = Map.Make(String) ;;
 
-let env_at_return = ref StrMap.empty ;;
+let env_at_return = ref Env.empty ;;
 
 let rec flatten_sum = function
   | Sum (l) :: tl -> (flatten_sum l) @ (flatten_sum tl)
@@ -85,15 +85,15 @@ and reduce_mod env m t =
     if t = m then Zero
     else match t with
     | Let (v, e, t)      ->
-      reduce_mod (StrMap.add v (reduce_mod env m e) env) m e
-    | Var (v)            -> reduce_mod env m (StrMap.find v env)
+      reduce_mod (Env.add v (reduce_mod env m e) env) m e
+    | Var (v)            -> reduce_mod env m (Env.find v env)
     | NoProp (v)         -> NoProp (v)
     | Prime (v)          -> Prime (v)
     | Protected (t)      -> reduce_mod env m t
     | If (c, t, e)       ->
       if reduce_cond_mod env m c
       then let r = reduce_mod env m t in
-           env_at_return := StrMap.add "_" r env; r
+           env_at_return := Env.add "_" r env; r
       else reduce_mod env m e
     | Sum (l)            -> Sum (List.map (reduce_mod env m) l)
     | Opp (t)            -> Opp (reduce_mod env m t)
@@ -122,10 +122,11 @@ and reduce_mod env m t =
     | Or (a, b)          -> raise Should_not_happen
     | Return (t)         ->
       let r = reduce_mod env m t in
-      env_at_return := StrMap.add "_" r env;
+      env_at_return := Env.add "_" r env;
       r
     | RandomFault (_)    -> if m = t then Zero else t
     | ZeroFault (_)      -> Zero
+    | Nil                -> Nil
   in red env (red_mod env (red env m) (red env t))
 
 and reduce_cond_mod env m = function
@@ -152,14 +153,14 @@ and reduce_cond env = function
 
 and red env term =
   match term with
-  | Let (v, e, t)      -> red (StrMap.add v (red env e) env) t
-  | Var (v)            -> red env (StrMap.find v env)
+  | Let (v, e, t)      -> red (Env.add v (red env e) env) t
+  | Var (v)            -> red env (Env.find v env)
   | NoProp (v)         -> NoProp (v)
   | Prime (v)          -> Prime (v)
   | Protected (t)      -> red env t
   | If (c, t, e)       ->
     if reduce_cond env c
-    then let r = red env t in env_at_return := StrMap.add "_" r env; r
+    then let r = red env t in env_at_return := Env.add "_" r env; r
     else red env e
   | Sum (l)            ->
     let l' = List.stable_sort compare
@@ -237,12 +238,13 @@ and red env term =
   | Or (a, b)          -> raise Should_not_happen
   | Return (t)         ->
     let r = red env t in
-    env_at_return := StrMap.add "_" r env;
+    env_at_return := Env.add "_" r env;
     r
   | RandomFault (f)    -> RandomFault (f)
   | ZeroFault (f)      -> Zero
+  | Nil                -> Nil
 ;;
 
 let reduce term =
-  red StrMap.empty term
+  red Env.empty term
 ;;
