@@ -2,10 +2,10 @@ open Batteries ;;
 open Computation ;;
 
 exception Non_faultable ;;
-exception Should_not_happen ;;
 exception End ;;
+exception Should_not_happen ;;
 
-let iterator max =
+let iterator max locations =
   let rec next = function
     | []                        -> []
     | [ l ] when l >= max       -> raise End
@@ -13,7 +13,8 @@ let iterator max =
     | a :: b :: tl when b = max ->
       List.init (2 + (List.length tl)) (fun i -> a + 1 + i)
     | hd :: tl                  -> hd :: (next tl)
-  in next
+  in try next locations
+    with End -> []
 ;;
 
 let inject_fault term transient fault_type location =
@@ -79,5 +80,6 @@ let inject term transient fault_types locations =
     | [], [] -> term, fsubterms
     | [], _  -> raise Should_not_happen
     | _, []  -> raise Should_not_happen
-  in inj fault_types (List.rev locations) term []
+  in try Some (inj fault_types (List.rev locations) term [])
+    with Non_faultable -> None
 ;;

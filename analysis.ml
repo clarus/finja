@@ -78,15 +78,20 @@ let analyse out env term cond transient fault_type count =
   let inject = Fault.inject aterm transient in
   let fault_types = List.make count fault_type in
   let rec loop locations success =
-    try
-      try
-        let faulted_term, faulted_subterms = inject fault_types locations in
-        let fterm = extract faulted_term in
-        let result = check_attack env cond fterm in
-        Html.print_attempt out fterm (List.map extract faulted_subterms)
-          result;
-        loop (next locations) (success + (if result then 1 else 0))
-      with Fault.Non_faultable -> loop (next locations) success
-    with Fault.End -> success
+    match inject fault_types locations with
+    | None -> begin
+      match next locations with
+      | []        -> success
+      | locations -> loop locations success
+      end
+    | Some (faulted_term, faulted_subterms) ->
+      let fterm = extract faulted_term in
+      let result = check_attack env cond fterm in
+      Html.print_attempt out fterm (List.map extract faulted_subterms)
+        result;
+      let success = success + (if result then 1 else 0) in
+      match next locations with
+      | []        -> success
+      | locations -> loop locations success
   in loop (List.init count identity) 0
 ;;
