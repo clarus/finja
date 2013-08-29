@@ -29,11 +29,13 @@ let html_of_term t =
     | If (c, t, e) ->
       "<b>if</b> " ^ (hot c) ^ " <b>abort with</b> " ^ (hot t) ^ " ;\n"
       ^ (hot e)
-    | Sum (l) -> List.fold_left (fun h t -> h ^ (opp t))
-        (hot (List.hd l)) (List.tl l)
+    | Sum (l) ->
+      "(" ^ (List.fold_left (fun h t -> h ^ (opp t))
+               (hot (List.hd l)) (List.tl l)) ^ ")"
     | Opp (t) -> "-" ^ (hot t)
-    | Prod (l) -> List.fold_left (fun h t -> h ^ " * " ^ (hot t))
-        (hot (List.hd l)) (List.tl l)
+    | Prod (l) ->
+      "(" ^ (List.fold_left (fun h t -> h ^ " * " ^ (hot t))
+               (hot (List.hd l)) (List.tl l)) ^ ")"
     | Inv (t)            -> "(" ^ (hot t) ^ ")<sup>-1</sup>"
     | Exp (a, b)         -> "(" ^ (hot a) ^ ")<sup>" ^ (hot b) ^ "</sup>"
     | Mod (a, b)         -> "(" ^ (hot a) ^ ") mod " ^ (hot b)
@@ -71,8 +73,8 @@ let start_header html fia =
   h2 code { margin: 0 0 0 1em; font-size:1.3em; color:#333; }\
   h2 a span { float:right; font-size:1em; color:#aaa;\
               text-decoration:underline; }\
-  .success { color: #d22; }\
-  .failure { color: #8b2; }\
+  .success, .s { color: #d22; }\
+  .failure, .f { color: #8b2; }\
   pre { font-size:1.2em; padding:0.5em; background-color:#ddd;\
         line-height:150%%; }\
   pre strong { color:#48f; }\
@@ -86,6 +88,24 @@ let start_header html fia =
     dl.style.display = (dl.style.display == 'block') ? 'none' : 'block';
     return false;\
    }\
+   function hide_failures (l) {\
+     var attempts = document.getElementsByClassName('attempt');\
+     for (i = 0; i < attempts.length; i++) attempts[i].style.display = 'none';\
+     var failures = document.getElementsByClassName('failure');\
+     for (i = 0; i < failures.length; i++) failures[i].style.display = 'none';\
+     l.innerHTML = 'show all';\
+     l.onclick = function(){ return show_all(l); };\
+     return false;\
+   }\
+   function show_all (l) {\
+     var attempts = document.getElementsByClassName('attempt');\
+     for (i = 0; i < attempts.length; i++) attempts[i].style.display = 'none';\
+     var failures = document.getElementsByClassName('failure');\
+     for (i = 0; i < failures.length; i++) failures[i].style.display = 'block';\
+     l.innerHTML = 'hide other';\
+     l.onclick = function(){ return hide_failures(l); };\
+     return false;\
+   }\
    </script>\
  </head>\
 <body>\
@@ -93,14 +113,16 @@ let start_header html fia =
     fia fia
 ;;
 
-let print_options html transient fault_type =
+let print_options html transient fault_type count =
   Printf.fprintf html "<dl><dt>Options:</dt><dd><p><i>transient faults:</i> \
-  %s.<br /><i>fault type:</i> %s.</p></dd>"
+  %s.<br /><i>fault type:</i> %s.<br /><i>Maximum number of faults:</i> \
+  %d.</p></dd>"
     (if transient then "enabled" else "disabled")
     (match fault_type with
     | Randomizing -> "randomizing"
     | Zeroing -> "zeroing"
     | Both -> "both randomizing and zeroing")
+    count
 ;;
 
 let print_attack_success_condition html cond =
@@ -112,13 +134,14 @@ let end_header html =
   Printf.fprintf html "</dl>"
 ;;
 
-let print_summary html successful_attacks_count =
+let print_summary html attacks_count =
   Printf.fprintf html "<dt>Summary <strong class=\"%s\">%s</strong></dt><dd>\
-  <p><i>Total number of different fault injection:</i> %d.<br />\
-  <i>Total number of successful attack:</i> %d.</p></dd>"
-    (if successful_attacks_count = 0 then "failure" else "success")
-    (if successful_attacks_count = 0 then "PROTECTED" else "BROKEN")
-    !attempt successful_attacks_count
+  <p><i>Total number of different fault injections:</i> %d.<br />\
+  <i>Total number of successful attack:</i> %d (<a href=\"#\" \
+  onclick=\"return hide_failures(this);\">hide others</a>).</p></dd>"
+    (if attacks_count = 0 then "f" else "s")
+    (if attacks_count = 0 then "PROTECTED" else "BROKEN")
+    !attempt attacks_count
 ;;
 
 let print_term html title term =
@@ -126,13 +149,15 @@ let print_term html title term =
     title (html_of_term term)
 ;;
 
-let print_attempt html term faulted_subterm result =
+let print_attempt html term faulted_subterms result =
   Printf.fprintf html "<h2 class=\"%s\"><a href=\"#attempt%d\" \
   onclick=\"return ec(this.href);\">Attempt %d <code>%s</code>\
   <span>expand/collapse</span></a></h2><dl id=\"attempt%d\" class=\"attempt\">"
     (if result then "success" else "failure") !attempt !attempt
-    (html_of_term faulted_subterm) !attempt;
-  attempt := !attempt + 1;
+    (List.fold_left (fun a t -> (html_of_term t) ^ " | " ^ a)
+       (html_of_term (List.hd faulted_subterms)) (List.tl faulted_subterms))
+    !attempt;
+  incr attempt;
   print_term html "Faulted computation" term;
   Printf.fprintf html "<dt>Result</dt><dd><p>%s</p></dd></dl>"
     (if result then "Attack successful." else "Harmless fault injection.");
