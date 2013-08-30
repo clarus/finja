@@ -113,15 +113,14 @@ let start_header html fia =
     fia fia
 ;;
 
-let print_options html transient fault_type count =
+let print_options html transient fault_types count =
   Printf.fprintf html "<dl><dt>Options:</dt><dd><p><i>transient faults:</i> \
-  %s.<br /><i>fault type:</i> %s.<br /><i>Maximum number of faults:</i> \
+  %s.<br /><i>fault types:</i> %s.<br /><i>Maximum number of faults:</i> \
   %d.</p></dd>"
     (if transient then "enabled" else "disabled")
-    (match fault_type with
-    | Randomizing -> "randomizing"
-    | Zeroing -> "zeroing"
-    | Both -> "both randomizing and zeroing")
+    (List.fold_left (fun a -> function
+    | Randomizing -> a ^ " randomizing"
+    | Zeroing -> a ^ " zeroing") "" fault_types)
     count
 ;;
 

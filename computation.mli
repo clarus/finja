@@ -87,5 +87,4 @@ type description = term_p * term_p ;;
 type fault_type =
 | Randomizing
 | Zeroing
-| Both
 ;;

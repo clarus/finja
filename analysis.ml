@@ -72,11 +72,10 @@ let check_attack env cond faulted_term =
     cond
 ;;
 
-let analyse out env term cond transient fault_type count =
+let analyse out env term cond transient fault_types count =
   let aterm, max_location = order term in
   let next = Fault.iterator max_location in
   let inject = Fault.inject aterm transient in
-  let fault_types = List.make count fault_type in
   let rec loop locations success =
     match locations with
     | [] -> success

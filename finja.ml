@@ -5,7 +5,7 @@ let fia_input = ref "" ;;
 let html_output = ref "" ;;
 let lint_only = ref false ;;
 let transient = ref false ;;
-let fault_type = ref Randomizing ;;
+let fault_types = ref [] ;;
 let count = ref 1 ;;
 
 let set_fia_input filename =
@@ -13,15 +13,26 @@ let set_fia_input filename =
   if !html_output = "" then html_output := filename ^ ".html"
 ;;
 
+let add_fault_type ftype =
+  if List.length !fault_types >= !count
+  then raise (Arg.Bad "Too many fault type options")
+  else fault_types := ftype :: !fault_types
+
 let usage = "finja [options] <input-file>" ;;
 let options =
-  [ "-o", Arg.Set_string html_output, "<output-file> HTML report (defaults to input-file.html)"
-  ; "-l", Arg.Set lint_only, "Only check syntax"
-  ; "-t", Arg.Set transient, "Enable transient faults (default is only permanent fault)"
-  ; "-r", Arg.Unit (fun () -> fault_type := Randomizing), "Inject randomizing faults (default)"
-  ; "-z", Arg.Unit (fun () -> fault_type := Zeroing), "Inject zeroing faults"
-  (* ; "-b", Arg.Unit (fun () -> fault_type := Both), "Inject both types of faults" *)
-  ; "-n", Arg.Set_int count, "Specify the number of faults"
+  [ "-o", Arg.Set_string html_output,
+    "<output-file> HTML report (defaults to input-file.html)"
+  ; "-l", Arg.Set lint_only,
+    "Only check syntax"
+  ; "-t", Arg.Set transient,
+    "Enable transient faults (default is only permanent fault)"
+  ; "-r", Arg.Unit (fun () -> add_fault_type Randomizing),
+    "Inject randomizing fault (default)"
+  ; "-z", Arg.Unit (fun () -> add_fault_type Zeroing),
+    "Inject zeroing fault"
+  ; "-n", Arg.Set_int count,
+    "Specify the number of faults (default is 1). If specified, you can use \
+     the -r and -z option for each fault (last one is repeated)."
   ] ;;
 
 
@@ -56,18 +67,23 @@ let () =
         let term, cond = Sanity.check desc in
         if !lint_only then exit 0;
 
+        let fault_types = List.rev !fault_types
+          @ List.make (!count - (List.length !fault_types))
+            (if !fault_types = [] then Randomizing else List.hd !fault_types)
+        in
+
         let reduced_term = Reduction.reduce term in
         let env = !Reduction.env_at_return in
 
         let tmp, tmpname = File.open_temporary_out () in
         let attacks_count =
-          Analysis.analyse tmp env term cond !transient !fault_type !count
+          Analysis.analyse tmp env term cond !transient fault_types !count
         in
         IO.close_out tmp;
 
         File.with_file_out !html_output (fun report ->
           Html.start_header report !fia_input;
-          Html.print_options report !transient !fault_type !count;
+          Html.print_options report !transient fault_types !count;
           Html.print_summary report attacks_count;
           Html.print_term report "Computation" term;
           Html.print_attack_success_condition report cond;

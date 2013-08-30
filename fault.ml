@@ -23,13 +23,13 @@ let inject_fault term transient fault_type location =
     if fst term = location then
       if protected then raise Non_faultable
       else match snd term with
-      | AProtected _              -> raise Non_faultable
-      | AVar _ when not transient -> raise Non_faultable
-      | AZero when not transient  -> raise Non_faultable
-      | AOne when not transient   -> raise Non_faultable
-      | ARandomFault (f)          -> faulted_subterm := term;
+      | AProtected (_)              -> raise Non_faultable
+      | AVar (_) when not transient -> raise Non_faultable
+      | AZero when not transient    -> raise Non_faultable
+      | AOne when not transient     -> raise Non_faultable
+      | ARandomFault (f)            -> faulted_subterm := term;
         fst term, ARandomFault (-location)
-      | AZeroFault (f)            -> faulted_subterm := term;
+      | AZeroFault (f)              -> faulted_subterm := term;
         fst term, AZeroFault (-location)
       | _ -> begin
         match fault_type with
@@ -37,7 +37,6 @@ let inject_fault term transient fault_type location =
           fst term, ARandomFault (location)
         | Zeroing     -> faulted_subterm := term;
           fst term, AZeroFault (location)
-        | _           -> raise Should_not_happen
       end
     else
       let inj' = inj protected in
