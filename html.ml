@@ -100,8 +100,8 @@ let start_header html fia =
    function show_all (l) {\
      var attempts = document.getElementsByClassName('attempt');\
      for (i = 0; i < attempts.length; i++) attempts[i].style.display = 'none';\
-     var failures = document.getElementsByClassName('failure');\
-     for (i = 0; i < failures.length; i++) failures[i].style.display = 'block';\
+     var fail = document.getElementsByClassName('failure');\
+     for (i = 0; i < fail.length; i++) fail[i].style.display = 'block';\
      l.innerHTML = 'hide other';\
      l.onclick = function(){ return hide_failures(l); };\
      return false;\

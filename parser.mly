@@ -42,13 +42,15 @@ desc:
 ;
 
 term:
-| Lnoprop; l = separated_nonempty_list(Lcomma, Lident); Lsemicolon; cont = term {
+| Lnoprop; l = separated_nonempty_list(Lcomma, Lident); Lsemicolon;
+  cont = term {
   List.fold_right
   (fun i acc -> t (PLet (i, t (PNoProp (i)) $startpos(l) $endpos(l), acc))
     $startpos $endpos)
   l cont
 }
-| Lprime; l = separated_nonempty_list(Lcomma, Lident); Lsemicolon; cont = term {
+| Lprime; l = separated_nonempty_list(Lcomma, Lident); Lsemicolon;
+  cont = term {
   List.fold_right
   (fun i acc -> t (PLet (i, t (PPrime (i)) $startpos(l) $endpos(l), acc))
     $startpos $endpos)
