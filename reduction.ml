@@ -109,13 +109,18 @@ and reduce_mod env m t =
     | Prod (l)           -> Prod (List.map (reduce_mod env m) l)
     | Inv (t)            -> Inv (reduce_mod env m t)
     | Exp (a, b)         ->
-      let b' = red env b in
-      begin
-        match b' with
-        | Opp (One)    -> Inv (reduce_mod env m a)
-        | Sum ([ Prime (_) as p ; Opp (One) ])
-            when p = m -> One
-        | _            -> Exp (reduce_mod env m a, Mod (b', phi m))
+      let a' = reduce_mod env m a in
+      let b' = red env b in begin
+        match m, a' with
+        | Prod ([ r ; r' ]), Sum ([ One ; r'' ]) when r = r' && r = r'' ->
+          Sum ([ One ; Prod ([ r ; reduce_mod env m b' ]) ])
+        | _, _ -> begin
+          match b' with
+          | Opp (One)    -> Inv (reduce_mod env m a)
+          | Sum ([ Prime (_) as p ; Opp (One) ])
+              when p = m -> One
+          | _            -> Exp (a', Mod (b', phi m))
+        end
       end
     | Mod (a, b)         ->
       let m' = red env (quotient (red env b) m) in
