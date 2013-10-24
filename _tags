@@ -1,1 +1,2 @@
-true: use_menhir, package(batteries)
+true: use_menhir, package(batteries), package(sexplib.syntax)
+<computation.ml>: syntax(camlp4o)

@@ -1,3 +1,7 @@
+TYPE_CONV_PATH "Computation"
+
+open Sexplib.Std
+
 type term_p = {
   term: pterm ;
   spos: Lexing.position;
@@ -80,11 +84,15 @@ type term =
 | RandomFault of int
 | ZeroFault   of int
 | Nil
-;;
+with sexp_of ;;
 
 type description = term_p * term_p ;;
 
 type fault_type =
 | Randomizing
 | Zeroing
+;;
+
+let print_term t =
+  print_endline (Sexplib.Sexp.to_string (sexp_of_term t))
 ;;
