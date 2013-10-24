@@ -16,6 +16,7 @@ let num = [ '0'-'9' ]
 let ident = '_' | '@' | ( alpha ( alpha | num | '_' | '@' | '\'' )* )
 
 rule token = parse
+| "--"         { comment lexbuf }
 | [' ' '\t']   { token lexbuf }
 | '\n'         { newline lexbuf; token lexbuf }
 | "noprop"     { Lnoprop }
@@ -47,3 +48,7 @@ rule token = parse
 | ident as s   { Lident (s) }
 | _ as c       { raise (Error c) }
 | eof          { Leof }
+
+and comment = parse
+| '\n'         { newline lexbuf; token lexbuf }
+| _            { comment lexbuf }
