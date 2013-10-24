@@ -30,7 +30,7 @@ let coprimes l =
     match l with
     | Prime (_) as p :: tl -> p :: cop tl acc
     | _ as hd :: tl        -> cop tl (hd :: acc)
-    | []                   -> [ Prod (acc) ]
+    | []                   -> if List.is_empty acc then [] else [ Prod (acc) ]
   in cop (flatten_prod l) []
 ;;
 
