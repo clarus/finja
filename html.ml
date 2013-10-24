@@ -38,7 +38,7 @@ let html_of_term t =
                (hot (List.hd l)) (List.tl l)) ^ ")"
     | Inv (t)            -> "(" ^ (hot t) ^ ")<sup>-1</sup>"
     | Exp (a, b)         -> "(" ^ (hot a) ^ ")<sup>" ^ (hot b) ^ "</sup>"
-    | Mod (a, b)         -> "(" ^ (hot a) ^ ") mod " ^ (hot b)
+    | Mod (a, b)         -> (hot a) ^ " mod " ^ (hot b)
     | Zero               -> "0"
     | One                -> "1"
     | Eq (a, b)          -> "(" ^ (hot a) ^ " = " ^ (hot b) ^ ")"
