@@ -2,7 +2,7 @@ open Batteries ;;
 open Computation ;;
 
 exception Faulted of term ;;
-exception Not_prime of term ;;
+exception Not_prime ;;
 exception Should_not_happen ;;
 
 module Env = Map.Make(String) ;;
@@ -40,11 +40,11 @@ let phi t =
     | Prod (l) -> Prod (List.map (fun p -> phi_ p) l)
     | RandomFault (_) as t -> raise (Faulted t)
     | ZeroFault (_) as t -> raise (Faulted t)
-    | _ as t -> raise (Not_prime t)
+    | _ -> raise Not_prime
   in
   try phi_ t with
   | Faulted (t)   -> t
-  | Not_prime (t) -> NoProp ("Not_prime")
+  | Not_prime -> t
 ;;
 
 let rec reduce_sum env l =
