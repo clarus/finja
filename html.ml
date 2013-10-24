@@ -148,7 +148,7 @@ let print_term html title term =
     title (html_of_term term)
 ;;
 
-let print_attempt html term faulted_subterms result =
+let print_attempt html term reduced_term faulted_subterms result =
   Printf.fprintf html "<h2 class=\"%s\"><a href=\"#attempt%d\" \
   onclick=\"return ec(this.href);\">Attempt %d <code>%s</code>\
   <span>expand/collapse</span></a></h2><dl id=\"attempt%d\" class=\"attempt\">"
@@ -158,7 +158,8 @@ let print_attempt html term faulted_subterms result =
     !attempt;
   incr attempt;
   print_term html "Faulted computation" term;
-  Printf.fprintf html "<dt>Result</dt><dd><p>%s</p></dd></dl>"
+  print_term html "Result" reduced_term;
+  Printf.fprintf html "<dd><p>%s</p></dd></dl>"
     (if result then "Attack successful." else "Harmless fault injection.");
 ;;
 
