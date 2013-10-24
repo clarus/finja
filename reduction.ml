@@ -10,15 +10,28 @@ module Env = Map.Make(String) ;;
 let env_at_return = ref Env.empty ;;
 
 let rec flatten_sum = function
-  | Sum (l) :: tl -> (flatten_sum l) @ (flatten_sum tl)
-  | t :: tl       -> t :: (flatten_sum tl)
-  | []            -> []
+  | Opp (Sum (l)) :: tl ->
+    (flatten_sum (List.map (fun e -> Opp (e)) l)) @ (flatten_sum tl)
+  | Sum (l) :: tl       -> (flatten_sum l) @ (flatten_sum tl)
+  | t :: tl             -> t :: (flatten_sum tl)
+  | []                  -> []
 ;;
 
 let rec flatten_prod = function
-  | Prod (l) :: tl -> (flatten_prod l) @ (flatten_prod tl)
-  | t :: tl        -> t :: (flatten_prod tl)
-  | []             -> []
+  | Inv (Prod (l)) :: tl ->
+    (flatten_prod (List.map (fun e -> Inv (e)) l)) @ (flatten_prod tl)
+  | Prod (l) :: tl       -> (flatten_prod l) @ (flatten_prod tl)
+  | t :: tl              -> t :: (flatten_prod tl)
+  | []                   -> []
+;;
+
+let coprimes l =
+  let rec cop l acc =
+    match l with
+    | Prime (_) as p :: tl -> p :: cop tl acc
+    | _ as hd :: tl        -> cop tl (hd :: acc)
+    | []                   -> [ Prod (acc) ]
+  in cop (flatten_prod l) []
 ;;
 
 let rec quotient a b =
@@ -128,8 +141,22 @@ and reduce_mod env m t =
 and reduce_cond env = function
   | Eq (a, b)          -> red env a = red env b
   | NotEq (a, b)       -> red env a <> red env b
-  | EqMod (a, b, m)    -> reduce_mod env m a = reduce_mod env m b
-  | NotEqMod (a, b, m) -> reduce_mod env m a <> reduce_mod env m b
+  | EqMod (a, b, m)    -> begin
+    match red env m with
+    | Prod (l) ->
+      List.fold_left
+        (fun acc e -> acc && reduce_mod env e a = reduce_mod env e b)
+        true (coprimes l)
+    | _        -> reduce_mod env m a = reduce_mod env m b
+  end
+  | NotEqMod (a, b, m) -> begin
+    match red env m with
+    | Prod (l) ->
+      List.fold_left
+        (fun acc e -> acc || reduce_mod env e a <> reduce_mod env e b)
+        false (coprimes l)
+    | _        -> reduce_mod env m a <> reduce_mod env m b
+  end
   | And (a, b)         -> reduce_cond env a && reduce_cond env b
   | Or (a, b)          -> reduce_cond env a || reduce_cond env b
   | _ as t             -> red env t <> Zero
