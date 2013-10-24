@@ -4,6 +4,7 @@ open Computation ;;
 let fia_input = ref "" ;;
 let html_output = ref "" ;;
 let lint_only = ref false ;;
+let reduce_only = ref false ;;
 let transient = ref false ;;
 let fault_types = ref [] ;;
 let count = ref 1 ;;
@@ -24,6 +25,8 @@ let options =
     "<output-file> HTML report (defaults to input-file.html)"
   ; "-l", Arg.Set lint_only,
     "Only check syntax"
+  ; "-s", Arg.Set reduce_only,
+    "Only simplify the input term (no attacks)"
   ; "-t", Arg.Set transient,
     "Enable transient faults (default is only permanent fault)"
   ; "-r", Arg.Unit (fun () -> add_fault_type Randomizing),
@@ -77,7 +80,8 @@ let () =
 
         let tmp, tmpname = File.open_temporary_out () in
         let attacks_count =
-          Analysis.analyse tmp env term cond !transient fault_types !count
+          if !reduce_only then 0
+          else Analysis.analyse tmp env term cond !transient fault_types !count
         in
         IO.close_out tmp;
 
