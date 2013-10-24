@@ -20,8 +20,9 @@
 %token Land Lor
 %token Leof
 
+%left Lmod
 %left Lplus Lminus
-%left Lcirc Lmod
+%left Lcirc
 %left Lstar
 %left Lor
 %left Land
