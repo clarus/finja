@@ -90,11 +90,7 @@ and reduce_mod env m t =
     | NoProp (v)         -> NoProp (v)
     | Prime (v)          -> Prime (v)
     | Protected (t)      -> reduce_mod env m t
-    | If (c, t, e)       ->
-      if reduce_cond_mod env m c
-      then let r = reduce_mod env m t in
-           env_at_return := Env.add "_" r env; r
-      else reduce_mod env m e
+    | If (c, t, e)       -> raise Should_not_happen
     | Sum (l)            -> Sum (List.map (reduce_mod env m) l)
     | Opp (t)            -> Opp (reduce_mod env m t)
     | Prod (l)           -> Prod (List.map (reduce_mod env m) l)
@@ -128,19 +124,6 @@ and reduce_mod env m t =
     | ZeroFault (_)      -> Zero
     | Nil                -> Nil
   in red env (red_mod env (red env m) (red env t))
-
-and reduce_cond_mod env m = function
-  | Eq (a, b)           -> reduce_mod env m a = reduce_mod env m b
-  | NotEq (a, b)        -> reduce_mod env m a <> reduce_mod env m b
-  | EqMod (a, b, m')    ->
-    let m'' = reduce_mod env m m' in
-    reduce_mod env (quotient m'' m) a = reduce_mod env (quotient m'' m) b
-  | NotEqMod (a, b, m') ->
-    let m'' = reduce_mod env m m' in
-    reduce_mod env (quotient m'' m) a <> reduce_mod env (quotient m'' m) b
-  | And (a, b)          -> reduce_cond_mod env m a && reduce_cond_mod env m b
-  | Or (a, b)           -> reduce_cond_mod env m a || reduce_cond_mod env m b
-  | _ as t              -> reduce_mod env m t <> Zero
 
 and reduce_cond env = function
   | Eq (a, b)          -> red env a = red env b
