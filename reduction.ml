@@ -76,15 +76,14 @@ let rec reduce_sum env l =
 and reduce_prod env l =
   let rec red_p e before after =
     match after with
-    | hd :: tl ->
-      begin
-        match hd with
-        | Zero          -> [ Zero ]
-        | ZeroFault (_) -> [ Zero ]
-        | _             ->
-          if red env (Inv (hd)) = e then before @ tl
-          else red_p e (before @ [ hd ]) tl
-      end
+    | hd :: tl -> begin
+      match hd with
+      | Zero          -> [ Zero ]
+      | ZeroFault (_) -> [ Zero ]
+      | _             ->
+        if red env (Inv (hd)) = e then before @ tl
+        else red_p e (before @ [ hd ]) tl
+    end
     | [] -> e :: before
   in match l with
   | Zero :: _          -> [ Zero ]
@@ -110,7 +109,8 @@ and reduce_mod env m t =
     | Inv (t)            -> Inv (reduce_mod env m t)
     | Exp (a, b)         ->
       let a' = reduce_mod env m a in
-      let b' = red env b in begin
+      let b' = red env b in
+      begin
         match m, a' with
         | Prod ([ r ; r' ]), Sum ([ One ; r'' ]) when r = r' && r = r'' ->
           Sum ([ One ; Prod ([ r ; reduce_mod env m b' ]) ])
@@ -232,17 +232,16 @@ and red env term =
     end
   | Mod (a, b)         ->
     let b' = red env b in
-    if b' = One then Zero else
-      begin
-        match reduce_mod env b' a with
-        | Zero          -> Zero
-        | ZeroFault (f) -> Zero
-        | Mod (a, b)    ->
-          let b_ = quotient b b' in
-          if b_ = b then Mod (red env (Mod (a, b)), b')
-          else red env (Mod (a, b_))
-        | _ as a'       -> Mod (a', b')
-      end
+    if b' = One then Zero else begin
+      match reduce_mod env b' a with
+      | Zero          -> Zero
+      | ZeroFault (f) -> Zero
+      | Mod (a, b)    ->
+        let b_ = quotient b b' in
+        if b_ = b then Mod (red env (Mod (a, b)), b')
+        else red env (Mod (a, b_))
+      | _ as a'       -> Mod (a', b')
+    end
   | Zero               -> Zero
   | One                -> One
   | Eq (a, b)          -> raise Should_not_happen
