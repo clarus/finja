@@ -2,7 +2,7 @@ noprop m, e ;
 prime p, q ;
 
 dp := { e^-1 mod (p-1) } ;
-dq := { e^-1 mod (p-1) } ;
+dq := { e^-1 mod (q-1) } ;
 iq := { q^-1 mod p } ;
 
 sp := m^dp mod p ;
