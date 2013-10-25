@@ -57,7 +57,6 @@ let phi t =
   in
   try phi_ t with
   | Faulted (t)   -> t
-  | Not_prime -> t
 ;;
 
 let crt l m =
@@ -132,7 +131,7 @@ and reduce_mod env m t =
           | Opp (One)    -> Inv (reduce_mod env m a)
           | Sum ([ Prime (_) as p ; Opp (One) ])
               when p = m -> One
-          | _            -> Exp (a', Mod (b', phi m))
+          | _            -> Exp (a', try Mod (b', phi m) with Not_prime -> b')
         end
       end
     | Mod (a, b)         ->
