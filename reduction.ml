@@ -96,8 +96,7 @@ and reduce_mod env m t =
   let rec red_mod env m t =
     if t = m then Zero
     else match t with
-    | Let (v, e, t)      ->
-      reduce_mod (Env.add v (reduce_mod env m e) env) m e
+    | Let (v, e, t)      -> raise Should_not_happen
     | Var (v)            -> reduce_mod env m (Env.find v env)
     | NoProp (v)         -> NoProp (v)
     | Prime (v)          -> Prime (v)
@@ -112,7 +111,7 @@ and reduce_mod env m t =
       let b' = red env b in
       begin
         match m, a' with
-        | Prod ([ r ; r' ]), Sum ([ One ; r'' ]) when r = r' && r = r'' ->
+        | Prod ([ r ; r' ]), Sum ([ One ; r_ ]) when r = r' && r = r_ ->
           Sum ([ One ; Prod ([ r ; reduce_mod env m b' ]) ])
         | _, _ -> begin
           match b' with
@@ -127,18 +126,15 @@ and reduce_mod env m t =
       if m' = m then reduce_mod env m a
       else red env (Mod (a, m'))
     | Zero               -> Zero
-    | One                -> if m = One then Zero else One
+    | One                -> One
     | Eq (a, b)          -> raise Should_not_happen
     | NotEq (a, b)       -> raise Should_not_happen
     | EqMod (a, b, m)    -> raise Should_not_happen
     | NotEqMod (a, b, m) -> raise Should_not_happen
     | And (a, b)         -> raise Should_not_happen
     | Or (a, b)          -> raise Should_not_happen
-    | Return (t)         ->
-      let r = reduce_mod env m t in
-      env_at_return := Env.add "_" r env;
-      r
-    | RandomFault (_)    -> if m = t then Zero else t
+    | Return (t)         -> raise Should_not_happen
+    | RandomFault (_)    -> t
     | ZeroFault (_)      -> Zero
     | Nil                -> Nil
   in red env (red_mod env (red env m) (red env t))
@@ -152,7 +148,7 @@ and reduce_cond env = function
       List.fold_left
         (fun acc e -> acc && reduce_mod env e a = reduce_mod env e b)
         true (coprimes l)
-    | _        -> reduce_mod env m a = reduce_mod env m b
+    | _ as m   -> reduce_mod env m a = reduce_mod env m b
   end
   | NotEqMod (a, b, m) -> begin
     match red env m with
@@ -160,7 +156,7 @@ and reduce_cond env = function
       List.fold_left
         (fun acc e -> acc || reduce_mod env e a <> reduce_mod env e b)
         false (coprimes l)
-    | _        -> reduce_mod env m a <> reduce_mod env m b
+    | _ as m   -> reduce_mod env m a <> reduce_mod env m b
   end
   | And (a, b)         -> reduce_cond env a && reduce_cond env b
   | Or (a, b)          -> reduce_cond env a || reduce_cond env b
@@ -168,7 +164,7 @@ and reduce_cond env = function
 
 and red env term =
   match term with
-  | Let (v, e, t)      -> red (Env.add v (red env e) env) t
+  | Let (v, e, t)      -> red (Env.add v e env) t
   | Var (v)            -> red env (Env.find v env)
   | NoProp (v)         -> NoProp (v)
   | Prime (v)          -> Prime (v)
@@ -188,15 +184,13 @@ and red env term =
       | [ t ] -> t
       | _     -> Sum (l')
     end
-  | Opp (t)            ->
-    let t' = red env t in
-    begin
-      match t' with
-      | Opp (t)       -> t
-      | Zero          -> Zero
-      | ZeroFault (_) -> Zero
-      | _             -> Opp (t')
-    end
+  | Opp (t)            -> begin
+    match red env t with
+    | Opp (t)       -> t
+    | Zero          -> Zero
+    | ZeroFault (_) -> Zero
+    | _ as t        -> Opp (t)
+  end
   | Prod (l)           ->
     let l' = List.stable_sort compare
       (reduce_prod env
@@ -208,31 +202,27 @@ and red env term =
       | [ t ] -> t
       | _     -> Prod (l')
     end
-  | Inv (t)            ->
-    let t' = red env t in
-    begin
-      match t' with
-      | Inv (t) -> t
-      | One     -> One
-      | _       -> Inv (t')
+  | Inv (t)            -> begin
+    match red env t with
+    | Inv (t) -> t
+    | One     -> One
+    | _ as t  -> Inv (t)
+  end
+  | Exp (a, b)         -> begin
+    match red env b with
+    | Zero          -> One
+    | ZeroFault (_) -> One
+    | Opp (One)     -> Inv (red env a)
+    | _  as b'      -> begin
+      match red env a with
+      | Exp (a, b) -> red env (Exp (a, Prod ([ b ; b' ])))
+      | _ as a'    -> Exp (a', b')
     end
-  | Exp (a, b)         ->
-    let a' = red env a in
-    let b' = red env b in
-    begin
-      match b' with
-      | Zero          -> One
-      | ZeroFault (_) -> One
-      | Opp (One)     -> Inv (a')
-      | _ -> begin
-        match a' with
-        | Exp (a, b) -> red env (Exp (a, Prod ([ b ; b' ])))
-        | _          -> Exp (a', b')
-      end
-    end
-  | Mod (a, b)         ->
-    let b' = red env b in
-    if b' = One then Zero else begin
+  end
+  | Mod (a, b)         -> begin
+    match red env b with
+    | One            -> Zero
+    | _ as b'        -> begin
       match reduce_mod env b' a with
       | Zero          -> Zero
       | ZeroFault (f) -> Zero
@@ -242,6 +232,7 @@ and red env term =
         else red env (Mod (a, b_))
       | _ as a'       -> Mod (a', b')
     end
+  end
   | Zero               -> Zero
   | One                -> One
   | Eq (a, b)          -> raise Should_not_happen
