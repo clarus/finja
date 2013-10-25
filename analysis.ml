@@ -68,7 +68,7 @@ let rec extract aterm =
 
 let check_attack env cond faulted_term =
   Reduction.reduce_cond
-    (Reduction.Env.add "@" (Reduction.reduce faulted_term) env)
+    (Reduction.Env.add "@" faulted_term env)
     cond
 ;;
 
@@ -85,7 +85,7 @@ let analyse out env term cond transient fault_types count =
       | Some (faulted_term, faulted_subterms) ->
         let fterm = extract faulted_term in
         let rfterm = Reduction.reduce fterm in
-        let result = check_attack env cond fterm in
+        let result = check_attack env cond rfterm in
         Html.print_attempt out fterm rfterm (List.map extract faulted_subterms)
           result;
         loop (next locations) (success + (if result then 1 else 0))
