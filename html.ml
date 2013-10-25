@@ -13,7 +13,7 @@ let html_of_term t =
       ", <var>" ^ v ^ "</var>" ^ (prime t)
     | _ as t -> " ;\n" ^ (hot 0 t)
   and opp = function
-    | Opp (t) -> " - " ^ (hot 2 t)
+    | Opp (t) -> " &minus; " ^ (hot 2 t)
     | _ as t  -> " + " ^ (hot 1 t)
   and hot p = function
     (* p is for parentheses: 0 none, 1 might, 2 may *)
@@ -38,10 +38,10 @@ let html_of_term t =
     | Opp (t) -> "-" ^ (hot 2 t)
     | Prod (l) ->
       (if p > 1 && (List.length l) > 1 then "(" else "")
-      ^ (List.fold_left (fun h t -> h ^ " * " ^ (hot 2 t))
+      ^ (List.fold_left (fun h t -> h ^ " &times; " ^ (hot 2 t))
            (hot 0 (List.hd l)) (List.tl l))
       ^ (if p > 1 && (List.length l) > 1 then ")" else "")
-    | Inv (t)            -> (hot 2 t) ^ "<sup>-1</sup>"
+    | Inv (t)            -> (hot 2 t) ^ "<sup>&minus;1</sup>"
     | Exp (a, b)         -> (hot 2 a) ^ "<sup>" ^ (hot 0 b) ^ "</sup>"
     | Mod (a, b)         ->
       (if p > 0 then "(" else "")
