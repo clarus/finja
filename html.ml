@@ -7,57 +7,81 @@ let html_of_term t =
   let rec noprop = function
     | Let (v, NoProp (v'), t) when v = v' ->
       ", <var>" ^ v ^ "</var>" ^ (noprop t)
-    | _ as t -> " ;\n" ^ (hot t)
+    | _ as t -> " ;\n" ^ (hot 0 t)
   and prime = function
     | Let (v, Prime (v'), t) when v = v' ->
       ", <var>" ^ v ^ "</var>" ^ (prime t)
-    | _ as t -> " ;\n" ^ (hot t)
+    | _ as t -> " ;\n" ^ (hot 0 t)
   and opp = function
-    | Opp (t) -> " - " ^ (hot t)
-    | _ as t  -> " + " ^ (hot t)
-  and hot = function
+    | Opp (t) -> " - " ^ (hot 2 t)
+    | _ as t  -> " + " ^ (hot 1 t)
+  and hot p = function
+    (* p is for parentheses: 0 none, 1 might, 2 may *)
     | Let (v, NoProp (v'), t) when v = v' ->
       "<b>noprop</b> <var>" ^ v ^ "</var>" ^ (noprop t)
     | Let (v, Prime (v'), t) when v = v' ->
       "<b>prime</b> <var>" ^ v ^ "</var>" ^ (prime t)
     | Let (v, e, t) ->
-      "<var>" ^ v ^ "</var> := " ^ (hot e) ^ " ;\n" ^ (hot t)
+      "<var>" ^ v ^ "</var> := " ^ (hot 0 e) ^ " ;\n" ^ (hot 0 t)
     | Var (v) | NoProp (v) | Prime (v) ->
       "<var>" ^ v ^ "</var>"
     | Protected (t) ->
-      "<i>{</i> " ^ (hot t) ^ " <i>}</i>"
+      "<i>{</i> " ^ (hot 0 t) ^ " <i>}</i>"
     | If (c, t, e) ->
-      "<b>if</b> " ^ (hot c) ^ " <b>abort with</b> " ^ (hot t) ^ " ;\n"
-      ^ (hot e)
+      "<b>if</b> " ^ (hot 0 c) ^ " <b>abort with</b> "
+      ^ (hot 0 t) ^ " ;\n" ^ (hot 0 e)
     | Sum (l) ->
-      "(" ^ (List.fold_left (fun h t -> h ^ (opp t))
-               (hot (List.hd l)) (List.tl l)) ^ ")"
-    | Opp (t) -> "-" ^ (hot t)
+      (if p > 1 && (List.length l) > 1 then "(" else "")
+      ^ (List.fold_left (fun h t -> h ^ (opp t))
+           (hot 0 (List.hd l)) (List.tl l))
+      ^ (if p > 1 && (List.length l) > 1 then ")" else "")
+    | Opp (t) -> "-" ^ (hot 2 t)
     | Prod (l) ->
-      "(" ^ (List.fold_left (fun h t -> h ^ " * " ^ (hot t))
-               (hot (List.hd l)) (List.tl l)) ^ ")"
-    | Inv (t)            -> "(" ^ (hot t) ^ ")<sup>-1</sup>"
-    | Exp (a, b)         -> "(" ^ (hot a) ^ ")<sup>" ^ (hot b) ^ "</sup>"
-    | Mod (a, b)         -> (hot a) ^ " mod " ^ (hot b)
+      (if p > 1 && (List.length l) > 1 then "(" else "")
+      ^ (List.fold_left (fun h t -> h ^ " * " ^ (hot 2 t))
+           (hot 0 (List.hd l)) (List.tl l))
+      ^ (if p > 1 && (List.length l) > 1 then ")" else "")
+    | Inv (t)            -> (hot 2 t) ^ "<sup>-1</sup>"
+    | Exp (a, b)         -> (hot 2 a) ^ "<sup>" ^ (hot 0 b) ^ "</sup>"
+    | Mod (a, b)         ->
+      (if p > 0 then "(" else "")
+      ^ (hot 1 a) ^ " mod " ^ (hot 2 b)
+      ^ (if p > 0 then ")" else "")
     | Zero               -> "0"
     | One                -> "1"
-    | Eq (a, b)          -> "(" ^ (hot a) ^ " = " ^ (hot b) ^ ")"
-    | NotEq (a, b)       -> "(" ^ (hot a) ^ " &ne; " ^ (hot b) ^ ")"
-    | EqMod (a, b, m)    -> "(" ^ (hot a) ^ " &equiv; " ^ (hot b)
-      ^ " (mod " ^ (hot m) ^ "))"
-    | NotEqMod (a, b, m) -> "(" ^ (hot a) ^ " &#8802; " ^ (hot b)
-      ^ " (mod " ^ (hot m) ^ "))"
-    | And (a, b)         -> "(" ^ (hot a) ^ " &and; " ^ (hot b) ^ ")"
-    | Or (a, b)          -> "(" ^ (hot a) ^ " &or; " ^ (hot b) ^ ")"
-    | Return (t)         -> "<b>return</b> " ^ (hot t) ^ " ;\n"
+    | Eq (a, b)          ->
+      (if p > 1 then "(" else "")
+      ^ (hot 0 a) ^ " = " ^ (hot 0 b)
+      ^ (if p > 1 then ")" else "")
+    | NotEq (a, b)       ->
+      (if p > 1 then "(" else "")
+      ^ (hot 0 a) ^ " &ne; " ^ (hot 0 b)
+      ^ (if p > 1 then ")" else "")
+    | EqMod (a, b, m)    ->
+      (if p > 1 then "(" else "")
+      ^ (hot 0 a) ^ " &equiv; " ^ (hot 0 b) ^ " [mod " ^ (hot 0 m) ^ "]"
+      ^ (if p > 1 then ")" else "")
+    | NotEqMod (a, b, m) ->
+      (if p > 1 then "(" else "")
+      ^ (hot 0 a) ^ " &#8802; " ^ (hot 0 b) ^ " [mod " ^ (hot 0 m) ^ "]"
+      ^ (if p > 1 then ")" else "")
+    | And (a, b)         ->
+      (if p > 0 then "(" else "")
+      ^ (hot 1 a) ^ " &and; " ^ (hot 1 b)
+      ^ (if p > 0 then ")" else "")
+    | Or (a, b)          ->
+      (if p > 0 then "(" else "")
+      ^ (hot 1 a) ^ " &or; " ^ (hot 1 b)
+      ^ (if p > 0 then ")" else "")
+    | Return (t)         -> "<b>return</b> " ^ (hot 0 t) ^ " ;\n"
     | RandomFault (_)    -> "<strong>Random</strong>"
     | ZeroFault (_)      -> "<strong>Zero</strong>"
     | Nil                -> "<small>nil</small>"
-  in hot t
+  in hot 0 t
 ;;
 
 let start_header html fia =
-  Printf.fprintf html "<!DOCTYPE html>\
+  Printf.fprintf html "<!DOCTYPE html>\n\
 <html>\
 <head>\
   <title>finja report for %s</title>\
