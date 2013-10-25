@@ -47,16 +47,16 @@ let rec quotient a b =
 
 let phi t =
   let rec phi_ = function
-    | Prime (_) as p -> Sum([ Opp(One) ; p ])
-    | Exp (Prime (_) as p, k) ->
-      Prod ([ Sum([ Opp (One) ; p ]) ; Exp (p, Sum ([ Opp (One) ; k ])) ])
-    | Prod (l) -> Prod (List.map (fun p -> phi_ p) l)
-    | RandomFault (_) as t -> raise (Faulted t)
-    | ZeroFault (_) as t -> raise (Faulted t)
+    | Prime (_) as p          -> Sum([ Opp(One) ; p ])
+    | Exp (Prime (_) as p, k) -> Prod ([ p ; Sum([ Opp (One) ])
+                                       ; Exp (p, Sum ([ k ; Opp (One) ])) ])
+    | Prod (l)                -> Prod (List.map (fun p -> phi_ p) l)
+    | RandomFault (_) as t    -> raise (Faulted t)
+    | ZeroFault (_) as t      -> raise (Faulted t)
     | _ -> raise Not_prime
   in
   try phi_ t with
-  | Faulted (t)   -> t
+  | Faulted (t) -> t
 ;;
 
 let crt l m =
