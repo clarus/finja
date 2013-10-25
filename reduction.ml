@@ -60,6 +60,20 @@ let phi t =
   | Not_prime -> t
 ;;
 
+let crt l m =
+  let recomposition a b p q =
+    Mod (Sum ([ Prod ([ a ; q ; Mod (Inv (q), p) ])
+              ; Prod ([ b ; p ; Mod (Inv (p), q) ]) ]),
+         Prod ([ p ; q ]))
+  in
+  let rec loop = function
+    | [t], [p]             -> t
+    | t :: m_tl, p :: c_tl ->
+      recomposition t (loop (m_tl, c_tl)) p (Prod (c_tl))
+    | _, _                 -> raise Should_not_happen
+  in loop (l, m)
+;;
+
 let rec reduce_sum env l =
   let rec red_s e before after =
     match after with
@@ -169,10 +183,8 @@ and red env term =
   | NoProp (v)         -> NoProp (v)
   | Prime (v)          -> Prime (v)
   | Protected (t)      -> red env t
-  | If (c, t, e)       ->
-    if reduce_cond env c
-    then let r = red env t in env_at_return := Env.add "_" r env; r
-    else red env e
+  | If (c, t, e)       -> env_at_return := env;
+    red env (if reduce_cond env c then t else e)
   | Sum (l)            ->
     let l' = List.stable_sort compare
       (reduce_sum env
@@ -241,15 +253,20 @@ and red env term =
   | NotEqMod (a, b, m) -> raise Should_not_happen
   | And (a, b)         -> raise Should_not_happen
   | Or (a, b)          -> raise Should_not_happen
-  | Return (t)         ->
-    let r = red env t in
-    env_at_return := Env.add "_" r env;
-    r
+  | Return (t)         -> env_at_return := env; red env t
   | RandomFault (f)    -> RandomFault (f)
   | ZeroFault (f)      -> Zero
   | Nil                -> Nil
 ;;
 
 let reduce term =
-  red Env.empty term
+  let result =
+    match red Env.empty term with
+    | Mod (a, Prod (l)) ->
+      let c = coprimes l in
+      red !env_at_return
+        (crt (List.map (fun e -> reduce_mod !env_at_return e a) c) c)
+    | _ as t -> t
+  in env_at_return := Env.add "_" result !env_at_return;
+  result
 ;;
