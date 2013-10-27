@@ -26,12 +26,18 @@ let rec flatten_prod = function
 ;;
 
 let coprimes l =
+  let group l =
+    List.map (function | [t] -> t | l -> Prod (l))
+      (List.group_consecutive (=) (List.stable_sort compare l))
+  in
   let rec cop l acc =
     match l with
-    | Prime (_) as p :: tl -> p :: cop tl acc
-    | _ as hd :: tl        -> cop tl (hd :: acc)
-    | []                   -> if List.is_empty acc then [] else [ Prod (acc) ]
-  in cop (flatten_prod l) []
+    | Prime (_) as p :: tl       -> p :: cop tl acc
+    | RandomFault (_) as r :: tl -> r :: cop tl acc
+    | NoProp (_) as n :: tl      -> n :: cop tl acc
+    | _ as hd :: tl              -> cop tl (hd :: acc)
+    | [] -> if List.is_empty acc then [] else [ Prod (acc) ]
+  in group (cop (flatten_prod l) [])
 ;;
 
 let rec quotient a b =
