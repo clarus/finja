@@ -35,7 +35,7 @@ let options =
     "Inject zeroing fault"
   ; "-n", Arg.Set_int count,
     "Specify the number of faults (default is 1). If specified, you can use \
-     the -r and -z option for each fault (last one is repeated)."
+     the -r or -z option for each fault (last one is repeated)."
   ] ;;
 
 

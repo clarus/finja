@@ -1,4 +1,14 @@
-See http://pablo.rauzy.name/sensi/finja.html
+
+          +=----------------------------------------=+
+          | finja: fault injection analysis          |
+          | http://pablo.rauzy.name/sensi/finja.html |
+          +=----------------------------------------=+
+
+The finja (fault injection analysis) tool is being developed as
+part of my PhD work. It helps me to formally analyse some kinds
+of fault injection attacks and countermeasures against them. It
+uses modular arithmetic as a framework since it was first
+developped to analyse BellCoRe attacks on CRT-RSA computations.
 
 INTSALL
 =======
@@ -8,7 +18,33 @@ INTSALL
   - OCaml <http://www.ocaml.org/>
   - Batteries <http://batteries.forge.ocamlcore.org/>
   - menhir <http://gallium.inria.fr/~fpottier/menhir/>
+  - Sexplib <https://github.com/janestreet/sexplib>
 
 - Compile with:
 
     ocamlbuild -use-ocamlfind finja.native
+
+USAGE
+=====
+
+- Command line options:
+
+  finja [options] <input-file>
+    -o <output-file> HTML report (defaults to input-file.html)
+    -l Only check syntax
+    -s Only simplify the input term (no attacks)
+    -t Enable transient faults (default is only permanent fault)
+    -r Inject randomizing fault (default)
+    -z Inject zeroing fault
+    -n Specify the number of faults (default is 1).
+       If specified, you can use the -r or -z option for each
+       fault (last one is repeated).
+
+- Input file formats:
+
+  Input files are text files (which use the .fia extension by
+  convention) which first contain a description of the
+  computation tp analyze, then a line with a single '%' symbol,
+  then an attack success condition.
+
+  Examples of input files can be found in the tests directory.
