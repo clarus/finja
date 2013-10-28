@@ -55,15 +55,10 @@ let coprimes l =
     (List.group_consecutive (=) (List.stable_sort compare l))
 ;;
 
-let rec quotient a b =
-  match a, b with
-  | Prod (pa), Prod (pb) ->
-    if (List.fold_left (fun acc e -> acc && (List.mem e pa)) true pb)
-    then Prod (pb)
-    else Prod (pa)
-  | a', (Prod (_) as b) -> quotient (Prod ([ a' ])) b
-  | (Prod (_) as a), b' -> quotient a (Prod ([ b' ]))
-  | a', b'              -> quotient (Prod ([ a' ])) (Prod ([ b' ]))
+let quotient a b =
+  let pa, pb = prod_terms a, prod_terms b in
+  if (List.fold_left (fun acc e -> acc && (List.mem e pa)) true pb)
+  then Prod (pb) else Prod (pa)
 ;;
 
 let phi t =
