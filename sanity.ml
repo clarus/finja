@@ -16,14 +16,14 @@ let check desc =
 
   let rec flatten_sum = function
     | { term = PSum (s) ; spos = _ ; epos = _ } :: tl ->
-      (flatten_sum s) @ (flatten_sum tl)
-    | t :: tl -> t :: (flatten_sum tl)
+      flatten_sum s @ flatten_sum tl
+    | t :: tl -> t :: flatten_sum tl
     | []      -> []
 
   and flatten_prod = function
     | { term = PProd (s) ; spos = _ ; epos = _ } :: tl ->
-      (flatten_prod s) @ (flatten_prod tl)
-    | t :: tl -> t :: (flatten_prod tl)
+      flatten_prod s @ flatten_prod tl
+    | t :: tl -> t :: flatten_prod tl
     | []      -> []
 
   and chk env pt =

@@ -12,7 +12,7 @@ let iterator max locations =
     | [ l ]                     -> [ l + 1 ]
     | a :: b :: tl when b = max ->
       List.init (2 + (List.length tl)) (fun i -> a + 1 + i)
-    | hd :: tl                  -> hd :: (next tl)
+    | hd :: tl                  -> hd :: next tl
   in try next locations
     with End -> []
 ;;

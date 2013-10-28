@@ -7,14 +7,14 @@ let html_of_term t =
   let rec noprop = function
     | Let (v, NoProp (v'), t) when v = v' ->
       ", <var>" ^ v ^ "</var>" ^ (noprop t)
-    | _ as t -> " ;\n" ^ (hot 0 t)
+    | t -> " ;\n" ^ (hot 0 t)
   and prime = function
     | Let (v, Prime (v'), t) when v = v' ->
       ", <var>" ^ v ^ "</var>" ^ (prime t)
-    | _ as t -> " ;\n" ^ (hot 0 t)
+    | t -> " ;\n" ^ (hot 0 t)
   and opp = function
     | Opp (t) -> " &minus; " ^ (hot 2 t)
-    | _ as t  -> " + " ^ (hot 1 t)
+    | t -> " + " ^ (hot 1 t)
   and hot p = function
     (* p is for parentheses: 0 none, 1 might, 2 may *)
     | Let (v, NoProp (v'), t) when v = v' ->

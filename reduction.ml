@@ -11,17 +11,17 @@ let env_at_return = ref Env.empty ;;
 
 let rec flatten_sum = function
   | Opp (Sum (l)) :: tl ->
-    (flatten_sum (List.map (fun e -> Opp (e)) l)) @ (flatten_sum tl)
-  | Sum (l) :: tl       -> (flatten_sum l) @ (flatten_sum tl)
-  | t :: tl             -> t :: (flatten_sum tl)
+    flatten_sum (List.map (fun e -> Opp (e)) l) @ flatten_sum tl
+  | Sum (l) :: tl       -> flatten_sum l @ flatten_sum tl
+  | t :: tl             -> t :: flatten_sum tl
   | []                  -> []
 ;;
 
 let rec flatten_prod = function
   | Inv (Prod (l)) :: tl ->
-    (flatten_prod (List.map (fun e -> Inv (e)) l)) @ (flatten_prod tl)
-  | Prod (l) :: tl       -> (flatten_prod l) @ (flatten_prod tl)
-  | t :: tl              -> t :: (flatten_prod tl)
+    flatten_prod (List.map (fun e -> Inv (e)) l) @ flatten_prod tl
+  | Prod (l) :: tl       -> flatten_prod l @ flatten_prod tl
+  | t :: tl              -> t :: flatten_prod tl
   | []                   -> []
 ;;
 
@@ -72,7 +72,7 @@ let crt l m =
          Prod ([ p ; q ]))
   in
   let rec loop = function
-    | [t], [p]             -> t
+    | [ t ], [ p ]         -> t
     | t :: m_tl, p :: c_tl ->
       recomposition t (loop (m_tl, c_tl)) p (Prod (c_tl))
     | _, _                 -> raise Should_not_happen
@@ -179,7 +179,7 @@ and reduce_cond env = function
   end
   | And (a, b)         -> reduce_cond env a && reduce_cond env b
   | Or (a, b)          -> reduce_cond env a || reduce_cond env b
-  | _ as t             -> red env t <> Zero
+  | t                  -> red env t <> Zero
 
 and red env term =
   match term with
@@ -206,7 +206,7 @@ and red env term =
     | Opp (t)       -> t
     | Zero          -> Zero
     | ZeroFault (_) -> Zero
-    | _ as t        -> Opp (t)
+    | t             -> Opp (t)
   end
   | Prod (l)           ->
     let l' = List.stable_sort compare
@@ -223,23 +223,22 @@ and red env term =
     match red env t with
     | Inv (t) -> t
     | One     -> One
-    | _ as t  -> Inv (t)
+    | t       -> Inv (t)
   end
   | Exp (a, b)         -> begin
     match red env b with
     | Zero          -> One
     | ZeroFault (_) -> One
     | Opp (One)     -> Inv (red env a)
-    | _  as b'      -> begin
+    | b'            -> begin
       match red env a with
       | Exp (a, b) -> red env (Exp (a, Prod ([ b ; b' ])))
-      | _ as a'    -> Exp (a', b')
+      | a'         -> Exp (a', b')
     end
   end
   | Mod (a, b)         -> begin
     match red env b with
     | One            -> Zero
-    | _ as b'        -> begin
       match reduce_mod env b' a with
       | Zero          -> Zero
       | ZeroFault (f) -> Zero
@@ -247,7 +246,7 @@ and red env term =
         let b_ = quotient b b' in
         if b_ = b then Mod (red env (Mod (a, b)), b')
         else red env (Mod (a, b_))
-      | _ as a'       -> Mod (a', b')
+      | a'            -> Mod (a', b')
     end
   end
   | Zero               -> Zero
@@ -271,7 +270,7 @@ let reduce term =
       let c = coprimes l in
       red !env_at_return
         (crt (List.map (fun e -> reduce_mod !env_at_return e a) c) c)
-    | _ as t -> t
+    | t -> t
   in env_at_return := Env.add "_" result !env_at_return;
   result
 ;;
