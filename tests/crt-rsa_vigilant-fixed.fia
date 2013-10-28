@@ -45,7 +45,7 @@ SSq := Sqr - Bq * (1 + ddq * r - R4) ;
 S := SSq + q * (iq * (SSp - SSq) mod pp) ;
 N := p * q ;
 
-if N * (S - R4 - q * (iq * (R3 - R4))) !=[N * r * r] 0 abort with ERR8 ;
+if p * q * (S - R4 - q * (iq * (R3 - R4))) !=[N * r * r] 0 abort with ERR8 ;
 
 if q * iq !=[p] 1 abort with ERR9 ;
 
