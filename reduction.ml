@@ -25,19 +25,34 @@ let rec flatten_prod = function
   | []                   -> []
 ;;
 
+let rec common a b =
+  match a with
+  | hd :: tl ->
+    if List.mem hd b
+    then hd :: common tl (List.remove b hd)
+    else common tl b
+  | []       -> []
+;;
+
+let remove_common l c =
+  List.fold_left (fun acc e -> List.remove acc e) l c
+;;
+
+let rec prod_terms = function
+  | Prod (l) -> l
+  | t        -> [ t ]
+;;
+
 let coprimes l =
-  let group l =
-    List.map (function | [t] -> t | l -> Prod (l))
-      (List.group_consecutive (=) (List.stable_sort compare l))
-  in
   let rec cop l acc =
     match l with
-    | Prime (_) as p :: tl       -> p :: cop tl acc
-    | RandomFault (_) as r :: tl -> r :: cop tl acc
-    | NoProp (_) as n :: tl      -> n :: cop tl acc
-    | _ as hd :: tl              -> cop tl (hd :: acc)
-    | [] -> if List.is_empty acc then [] else [ Prod (acc) ]
-  in group (cop (flatten_prod l) [])
+    | Prime (_) as p :: tl -> p :: cop tl acc
+    | hd :: tl             -> cop tl (hd :: acc)
+    | []                   -> if List.is_empty acc then [] else [ Prod (acc) ]
+  in
+  let l = cop (flatten_prod l) [] in
+  List.map (function | [ t ] -> t | l -> Prod (l))
+    (List.group_consecutive (=) (List.stable_sort compare l))
 ;;
 
 let rec quotient a b =
@@ -162,21 +177,26 @@ and reduce_cond env = function
   | Eq (a, b)          -> red env a = red env b
   | NotEq (a, b)       -> red env a <> red env b
   | EqMod (a, b, m)    -> begin
-    match red env m with
-    | Prod (l) ->
+    match red env a, red env b with
+    | a, b when a = b   -> true
+    | Zero, t | t, Zero ->
+      let t', m' = prod_terms t, prod_terms (red env m) in
+      let c = common t' m' in
+      let t = Prod (remove_common t' c) in
+      let m = remove_common m' c in
+      List.fold_left
+        (fun acc e -> acc && reduce_mod env e t = Zero)
+        true (coprimes m)
+    | a, b              ->
+      let a', b', m' = prod_terms a, prod_terms b, prod_terms (red env m) in
+      let c = common a' (common b' m') in
+      let a, b = Prod (remove_common a' c), Prod (remove_common b' c) in
+      let m = remove_common m' c in
       List.fold_left
         (fun acc e -> acc && reduce_mod env e a = reduce_mod env e b)
-        true (coprimes l)
-    | _ as m   -> reduce_mod env m a = reduce_mod env m b
+        true (coprimes m)
   end
-  | NotEqMod (a, b, m) -> begin
-    match red env m with
-    | Prod (l) ->
-      List.fold_left
-        (fun acc e -> acc || reduce_mod env e a <> reduce_mod env e b)
-        false (coprimes l)
-    | _ as m   -> reduce_mod env m a <> reduce_mod env m b
-  end
+  | NotEqMod (a, b, m) -> not (reduce_cond env (EqMod (a, b, m)))
   | And (a, b)         -> reduce_cond env a && reduce_cond env b
   | Or (a, b)          -> reduce_cond env a || reduce_cond env b
   | t                  -> red env t <> Zero
