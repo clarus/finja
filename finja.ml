@@ -5,6 +5,7 @@ let fia_input = ref "" ;;
 let html_output = ref "" ;;
 let lint_only = ref false ;;
 let reduce_only = ref false ;;
+let success_only = ref false ;;
 let transient = ref false ;;
 let fault_types = ref [] ;;
 let count = ref 1 ;;
@@ -25,8 +26,10 @@ let options =
     "<output-file> HTML report (defaults to input-file.html)"
   ; "-l", Arg.Set lint_only,
     "Only check syntax"
-  ; "-s", Arg.Set reduce_only,
+  ; "-a", Arg.Set reduce_only,
     "Only simplify the input term (no attacks)"
+  ; "-s", Arg.Set success_only,
+    "Print only successful attacks in the html report"
   ; "-t", Arg.Set transient,
     "Enable transient faults (default is only permanent fault)"
   ; "-r", Arg.Unit (fun () -> add_fault_type Randomizing),
@@ -79,16 +82,17 @@ let () =
         let env = !Reduction.env_at_return in
 
         let tmp, tmpname = File.open_temporary_out () in
-        let attacks_count =
-          if !reduce_only then 0
-          else Analysis.analyse tmp env term cond !transient fault_types !count
+        let attempts_count, attacks_count =
+          if !reduce_only then 0, 0
+          else Analysis.analyse tmp !success_only
+            env term cond !transient fault_types !count
         in
         IO.close_out tmp;
 
         File.with_file_out !html_output (fun report ->
           Html.start_header report !fia_input;
           Html.print_options report !transient fault_types !count;
-          Html.print_summary report attacks_count;
+          Html.print_summary report attempts_count attacks_count;
           Html.print_term report "Computation" term;
           Html.print_attack_success_condition report cond;
           Html.print_term report "Reduced computation" reduced_term;

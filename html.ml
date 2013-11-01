@@ -1,8 +1,6 @@
 open Batteries ;;
 open Computation ;;
 
-let attempt = ref 0 ;;
-
 let html_of_term t =
   let rec noprop = function
     | Let (v, NoProp (v'), t) when v = v' ->
@@ -157,14 +155,14 @@ let end_header html =
   Printf.fprintf html "</dl>"
 ;;
 
-let print_summary html attacks_count =
+let print_summary html attempts_count attacks_count =
   Printf.fprintf html "<dt>Summary <strong class=\"%s\">%s</strong></dt><dd>\
   <p><i>Total number of different fault injections:</i> %d.<br />\
   <i>Total number of successful attack:</i> %d (<a href=\"#\" \
   onclick=\"return hide_failures(this);\">hide others</a>).</p></dd>"
     (if attacks_count = 0 then "f" else "s")
     (if attacks_count = 0 then "PROTECTED" else "BROKEN")
-    !attempt attacks_count
+    attempts_count attacks_count
 ;;
 
 let print_term html title term =
@@ -172,15 +170,14 @@ let print_term html title term =
     title (html_of_term term)
 ;;
 
-let print_attempt html term reduced_term faulted_subterms result =
+let print_attempt html term reduced_term faulted_subterms result attempt_num =
   Printf.fprintf html "<h2 class=\"%s\"><a href=\"#attempt%d\" \
   onclick=\"return ec(this.href);\">Attempt %d <code>%s</code>\
   <span>expand/collapse</span></a></h2><dl id=\"attempt%d\" class=\"attempt\">"
-    (if result then "success" else "failure") !attempt !attempt
+    (if result then "success" else "failure") attempt_num attempt_num
     (List.fold_left (fun a t -> (html_of_term t) ^ " | " ^ a)
        (html_of_term (List.hd faulted_subterms)) (List.tl faulted_subterms))
-    !attempt;
-  incr attempt;
+    attempt_num;
   print_term html "Faulted computation" term;
   print_term html "Result" reduced_term;
   Printf.fprintf html "<dd><p>%s</p></dd></dl>"

@@ -33,7 +33,8 @@ USAGE
   finja [options] <input-file>
     -o <output-file> HTML report (defaults to input-file.html)
     -l Only check syntax
-    -s Only simplify the input term (no attacks)
+    -a Only simplify the input term (no attacks)
+    -s Print only successful attacks in the html report
     -t Enable transient faults (default is only permanent fault)
     -r Inject randomizing fault (default)
     -z Inject zeroing fault

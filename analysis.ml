@@ -72,22 +72,24 @@ let check_attack env cond faulted_term =
     cond
 ;;
 
-let analyse out env term cond transient fault_types count =
+let analyse out success_only env term cond transient fault_types count =
   let aterm, max_location = order term in
   let next = Fault.iterator max_location in
   let inject = Fault.inject aterm transient in
-  let rec loop locations success =
+  let rec loop locations attempt success =
     match locations with
-    | [] -> success
+    | [] -> attempt, success
     | _  ->
       match inject fault_types locations with
-      | None -> loop (next locations) success
+      | None -> loop (next locations) attempt success
       | Some (faulted_term, faulted_subterms) ->
         let fterm = extract faulted_term in
         let rfterm = Reduction.reduce fterm in
         let result = check_attack env cond rfterm in
-        Html.print_attempt out fterm rfterm (List.map extract faulted_subterms)
-          result;
-        loop (next locations) (success + (if result then 1 else 0))
-  in loop (List.init count identity) 0
+        if not success_only || result then
+          Html.print_attempt out fterm rfterm
+            (List.map extract faulted_subterms) result attempt;
+        loop (next locations) (attempt + 1)
+          (success + (if result then 1 else 0))
+  in loop (List.init count identity) 0 0
 ;;
