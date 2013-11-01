@@ -13,22 +13,20 @@
 %token Lplus Lminus Lstar Lcirc Lmod
 %token Lobrace Lcbrace
 %token Loparen Lcparen
-%token Lif Labortwith
 %token Lobracket Lcbracket
+%token Lif Labortwith
 %token Lreturn
-%token Lpercent
+%token Lseparator
 %token Land Lor
 %token Leof
 
+%left Lor
+%left Land
 %left Lmod
 %left Lplus Lminus
 %left Lcirc
 %left Lstar
-%left Lor
-%left Land
-%nonassoc Lequal Lnoteq
 %nonassoc uminus
-%left Lcbracket
 
 %start desc
 
@@ -37,7 +35,7 @@
 %%
 
 desc:
-| t = term; Lpercent; a = cond; Leof {
+| t = term; Lseparator; a = cond; Leof {
   (t, a)
 }
 ;
@@ -103,16 +101,16 @@ expr:
 
 cond:
 | Loparen; c = cond; Lcparen { c }
-| a = cond; Lequal; b = cond {
+| a = mp_expr; Lequal; b = mp_expr {
   t (PEq (a, b)) $startpos $endpos
 }
-| a = cond; Lnoteq; b = cond {
+| a = mp_expr; Lnoteq; b = mp_expr {
   t (PNotEq (a, b)) $startpos $endpos
 }
-| a = cond; Lequal; Lobracket; m = expr; Lcbracket; b = cond {
+| a = mp_expr; Lequal; Lobracket; m = mp_expr; Lcbracket; b = mp_expr {
   t (PEqMod (a, b, m)) $startpos $endpos
 }
-| a = cond; Lnoteq; Lobracket; m = expr; Lcbracket; b = cond {
+| a = mp_expr; Lnoteq; Lobracket; m = mp_expr; Lcbracket; b = mp_expr {
   t (PNotEqMod (a, b, m)) $startpos $endpos
 }
 | a = cond; Land; b = cond {

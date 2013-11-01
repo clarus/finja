@@ -51,6 +51,6 @@ if q * iq !=[p] 1 abort with ERR9 ;
 
 return S mod N ;
 
-%
+%%
 
 _ != @ /\ ( _ =[p] @ \/ _ =[q] @ )

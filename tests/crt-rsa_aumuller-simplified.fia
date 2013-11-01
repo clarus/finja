@@ -34,6 +34,6 @@ if Spt^dqt !=[t] Sqt^dpt abort with error ;
 
 return S ;
 
-%
+%%
 
 S != @ /\ ( S =[p] @ \/ S =[q] @ )

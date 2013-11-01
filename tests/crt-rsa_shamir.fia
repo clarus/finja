@@ -21,6 +21,6 @@ if Spp !=[r] Sqq abort with error ;
 
 return S ;
 
-%
+%%
 
 S != @ /\ ( S =[p] @ \/ S =[q] @ )

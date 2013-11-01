@@ -38,7 +38,7 @@ rule token = parse
 | ")"          { Lcparen }
 | "["          { Lobracket }
 | "]"          { Lcbracket }
-| "%"          { Lpercent }
+| "%%"         { Lseparator }
 | "mod"        { Lmod }
 | "if"         { Lif }
 | "abort with" { Labortwith }

@@ -32,7 +32,7 @@ MMq := Aq * Mq + Bq * (1 + r) mod qq ;
 
 if MMq !=[q] M abort with ERR4 ;
 
-if Mp !=[r * r] Mq abort with ERR5 ;
+-- if Mp !=[r * r] Mq abort with ERR5 ;
 
 ddq := dq + R2 * (q - 1) ;
 Sqr := MMq^ddq mod qq ;
@@ -47,10 +47,10 @@ N := p * q ;
 
 if p * q * (S - R4 - q * (iq * (R3 - R4))) !=[N * r * r] 0 abort with ERR8 ;
 
-if q * iq !=[p] 1 abort with ERR9 ;
+-- if q * iq !=[p] 1 abort with ERR9 ;
 
 return S mod N ;
 
-%
+%%
 
 _ != @ /\ ( _ =[p] @ \/ _ =[q] @ )

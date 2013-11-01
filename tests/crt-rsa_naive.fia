@@ -12,6 +12,6 @@ s := sq + (q * (iq * (sp - sq) mod p)) ;
 
 return s ;
 
-%
+%%
 
 s != @ /\ ( s =[p] @ \/ s =[q] @ )
