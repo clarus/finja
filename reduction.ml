@@ -254,6 +254,7 @@ and red env term =
   | Mod (a, b)         -> begin
     match red env b with
     | One            -> Zero
+    | b'             -> begin
       match reduce_mod env b' a with
       | Zero          -> Zero
       | ZeroFault (f) -> Zero
