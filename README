@@ -45,7 +45,44 @@ USAGE
 
   Input files are text files (which use the .fia extension by
   convention) which first contain a description of the
-  computation tp analyze, then a line with a single '%' symbol,
-  then an attack success condition.
+  computation term to analyze, then a line with a single '%%'
+  symbol, then an attack success condition.
+
+  The BNF of the syntax is given below.
+
+    fia     ::= term '%%' cond
+    term    ::= ( stmt )* 'return' mp_expr ';'
+    stmt    ::= ( decl | assign | verif ) ';'
+    decl    ::= 'noprop' var ( ',' var )*
+              | 'prime' var ( ',' var )*
+    assign  ::= var ':=' mp_expr
+    verif   ::= 'if' cond 'abort with' mp_expr
+    mp_expr ::= '{'? expr '}'?
+    expr    ::= '(' mp_expr ')'
+              | '0' | '1' | var
+              | '-' mp_expr
+              | mp_expr '+' mp_expr
+              | mp_expr '-' mp_expr
+              | mp_expr '*' mp_expr
+              | mp_expr '^' mp_expr
+              | mp_expr 'mod' mp_expr
+    cond    ::= '(' cond ')'
+              | mp_expr '=' mp_expr
+              | mp_expr '!=' mp_expr
+              | mp_expr '=[' mp_expr ']' mp_expr
+              | mp_expr '!=[' mp_expr ']' mp_expr
+              | cond '/\' cond
+              | cond '\/' cond
+    var     ::= [a-zA-Z][a-zA-Z0-9_']*
+
+  The "mp" in "mp_expr" stands for "maybe protected". An
+  expression surrounded by "{" and "}" can't be faulted.
+    
+  The attack success condition can use all the variables
+  introduced in the computation term, plus two special variables
+  "_" and "@" which respectively represent the returned
+  expression of the computation term as given in the input file,
+  and the returned expression of the computation term with
+  injected faults.
 
   Examples of input files can be found in the tests directory.
