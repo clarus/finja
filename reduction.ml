@@ -4,6 +4,7 @@ open Computation ;;
 exception Faulted of term ;;
 exception Not_prime ;;
 exception Should_not_happen ;;
+exception Foo ;;
 
 module Env = Map.Make(String) ;;
 
@@ -195,7 +196,7 @@ and reduce_cond env = function
   | And (a, b)         -> reduce_cond env a && reduce_cond env b
   | Or (a, b)          -> reduce_cond env a || reduce_cond env b
   | Protected (c)      -> reduce_cond env c
-  | _                  -> raise Should_not_happen
+  | t                  -> red env t <> Zero
 
 and red env term =
   match term with
