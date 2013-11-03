@@ -78,7 +78,7 @@ let html_of_term t =
   in hot 0 t
 ;;
 
-let start_header html fia =
+let start_header html fia success_only =
   Printf.fprintf html "<!DOCTYPE html>\n\
 <html>\
 <head>\
@@ -109,7 +109,8 @@ let start_header html fia =
     var dl = document.getElementById(target.substr(target.indexOf('#') + 1));\
     dl.style.display = (dl.style.display == 'block') ? 'none' : 'block';
     return false;\
-   }\
+   }" fia;
+  if not success_only then Printf.fprintf html "\
    function hide_failures (l) {\
      var attempts = document.getElementsByClassName('attempt');\
      for (i = 0; i < attempts.length; i++) attempts[i].style.display = 'none';\
@@ -127,12 +128,11 @@ let start_header html fia =
      l.innerHTML = 'hide other';\
      l.onclick = function(){ return hide_failures(l); };\
      return false;\
-   }\
-   </script>\
- </head>\
+   }";
+  Printf.fprintf html "</script>\
+</head>\
 <body>\
-  <h1>finja report for &quot;%s&quot;</h1>"
-    fia fia
+  <h1>finja report for &quot;%s&quot;</h1>" fia
 ;;
 
 let print_options html transient fault_types count =
@@ -155,14 +155,16 @@ let end_header html =
   Printf.fprintf html "</dl>"
 ;;
 
-let print_summary html attempts_count attacks_count =
+let print_summary html attempts_count attacks_count success_only =
   Printf.fprintf html "<dt>Summary <strong class=\"%s\">%s</strong></dt><dd>\
   <p><i>Total number of different fault injections:</i> %d.<br />\
-  <i>Total number of successful attack:</i> %d (<a href=\"#\" \
-  onclick=\"return hide_failures(this);\">hide others</a>).</p></dd>"
+  <i>Total number of successful attack:</i> %d"
     (if attacks_count = 0 then "f" else "s")
     (if attacks_count = 0 then "PROTECTED" else "BROKEN")
-    attempts_count attacks_count
+    attempts_count attacks_count;
+  if not success_only then Printf.fprintf html " (<a href=\"#\" \
+  onclick=\"return hide_failures(this);\">hide others</a>)";
+  Printf.fprintf html ".</p></dd>"
 ;;
 
 let print_term html title term =

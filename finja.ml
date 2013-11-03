@@ -90,9 +90,9 @@ let () =
         IO.close_out tmp;
 
         File.with_file_out !html_output (fun report ->
-          Html.start_header report !fia_input;
+          Html.start_header report !fia_input !success_only;
           Html.print_options report !transient fault_types !count;
-          Html.print_summary report attempts_count attacks_count;
+          Html.print_summary report attempts_count attacks_count !success_only;
           Html.print_term report "Computation" term;
           Html.print_attack_success_condition report cond;
           Html.print_term report "Reduced computation" reduced_term;
