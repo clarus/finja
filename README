@@ -57,8 +57,8 @@ USAGE
     decl    ::= 'noprop' var ( ',' var )*
               | 'prime' var ( ',' var )*
     assign  ::= var ':=' mp_expr
-    verif   ::= 'if' cond 'abort with' mp_expr
-    mp_expr ::= '{'? expr '}'?
+    verif   ::= 'if' mp_cond 'abort with' mp_expr
+    mp_expr ::= '{' expr '}' | expr
     expr    ::= '(' mp_expr ')'
               | '0' | '1' | var
               | '-' mp_expr
@@ -67,13 +67,14 @@ USAGE
               | mp_expr '*' mp_expr
               | mp_expr '^' mp_expr
               | mp_expr 'mod' mp_expr
-    cond    ::= '(' cond ')'
+    mp_cond ::= '{' cond '}' | cond
+    cond    ::= '(' mp_cond ')'
               | mp_expr '=' mp_expr
               | mp_expr '!=' mp_expr
               | mp_expr '=[' mp_expr ']' mp_expr
               | mp_expr '!=[' mp_expr ']' mp_expr
-              | cond '/\' cond
-              | cond '\/' cond
+              | mp_cond '/\' mp_cond
+              | mp_cond '\/' mp_cond
     var     ::= [a-zA-Z][a-zA-Z0-9_']*
 
   The "mp" in "mp_expr" stands for "maybe protected". An

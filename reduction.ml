@@ -194,7 +194,8 @@ and reduce_cond env = function
   | NotEqMod (a, b, m) -> not (reduce_cond env (EqMod (a, b, m)))
   | And (a, b)         -> reduce_cond env a && reduce_cond env b
   | Or (a, b)          -> reduce_cond env a || reduce_cond env b
-  | t                  -> red env t <> Zero
+  | Protected (c)      -> reduce_cond env c
+  | _                  -> raise Should_not_happen
 
 and red env term =
   match term with

@@ -58,7 +58,7 @@ term:
 | i = Lident; Lassign; e = mp_expr; Lsemicolon; cont = term {
   t (PLet (i, e, cont)) $startpos $endpos
 }
-| Lif; c = cond; Labortwith; e = mp_expr; Lsemicolon; cont = term {
+| Lif; c = mp_cond; Labortwith; e = mp_expr; Lsemicolon; cont = term {
   t (PIf (c, e, cont)) $startpos $endpos
 }
 | Lreturn; e = mp_expr; Lsemicolon {
@@ -99,8 +99,15 @@ expr:
 }
 ;
 
+mp_cond:
+| Lobrace; c = cond; Lcbrace {
+  t (PProtected (c)) $startpos $endpos
+}
+| c = cond { c }
+;
+
 cond:
-| Loparen; c = cond; Lcparen { c }
+| Loparen; c = mp_cond; Lcparen { c }
 | a = mp_expr; Lequal; b = mp_expr {
   t (PEq (a, b)) $startpos $endpos
 }
@@ -113,11 +120,10 @@ cond:
 | a = mp_expr; Lnoteq; Lobracket; m = mp_expr; Lcbracket; b = mp_expr {
   t (PNotEqMod (a, b, m)) $startpos $endpos
 }
-| a = cond; Land; b = cond {
+| a = mp_cond; Land; b = mp_cond {
   t (PAnd (a, b)) $startpos $endpos
 }
-| a = cond; Lor; b = cond {
+| a = mp_cond; Lor; b = mp_cond {
   t (POr (a, b)) $startpos $endpos
 }
-| e = mp_expr { e }
 ;
