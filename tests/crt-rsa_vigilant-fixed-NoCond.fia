@@ -1,0 +1,56 @@
+noprop ERR1, ERR2, ERR3, ERR4, ERR5, ERR6, ERR7, ERR8, ERR9 ;
+noprop M, e, r, R1, R2, R3, R4 ;
+prime p, q ;
+
+dp := { e^-1 mod (p-1) } ;
+dq := { e^-1 mod (q-1) } ;
+iq := { q^-1 mod p } ;
+
+p' := p * r * r ;
+Mp := M mod p' ;
+ipr := p^-1 mod (r * r) ;
+Bp := p * ipr ;
+Ap := 1 - Bp mod p' ;
+M'p := Ap * Mp + Bp * (1 + r) mod p' ;
+
+if { M'p !=[p] M } abort with ERR1 ;
+
+d'p := dp + R1 * (p - 1) ;
+Spr := M'p^d'p mod p' ;
+
+if { d'p !=[p - 1] dp } abort with ERR2 ;
+
+if { Bp * Spr !=[p'] Bp * (1 + d'p * r) } abort with ERR3 ;
+
+S'p := Spr - Bp * (1 + d'p * r - R3) ;
+q' := q * r * r ;
+Mq := M mod q' ;
+iqr := q^-1 mod (r * r) ;
+Bq := q * iqr ;
+Aq := 1 - Bq mod q' ;
+M'q := Aq * Mq + Bq * (1 + r) mod q' ;
+
+if { M'q !=[q] M } abort with ERR4 ;
+
+-- if { Mp !=[r * r] Mq } abort with ERR5 ;
+
+d'q := dq + R2 * (q - 1) ;
+Sqr := M'q^d'q mod q' ;
+
+if { d'q !=[q - 1] dq } abort with ERR6 ;
+
+if { Bq * Sqr !=[q'] Bq * (1 + d'q * r) } abort with ERR7 ;
+
+S'q := Sqr - Bq * (1 + d'q * r - R4) ;
+S := S'q + q * (iq * (S'p - S'q) mod p') ;
+N := p * q ;
+
+if { p * q * (S - R4 - q * (iq * (R3 - R4))) !=[N * r * r] 0 } abort with ERR8 ;
+
+-- if { q * iq !=[p] 1 } abort with ERR9 ;
+
+return S mod N ;
+
+%%
+
+_ != @ /\ ( _ =[p] @ \/ _ =[q] @ )
