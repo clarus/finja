@@ -1,7 +1,6 @@
 open Batteries ;;
 open Computation ;;
 
-exception Faulted of term ;;
 exception Not_prime ;;
 exception Should_not_happen ;;
 exception Foo ;;
@@ -62,18 +61,12 @@ let quotient a b =
   then Prod (pb) else Prod (pa)
 ;;
 
-let phi t =
-  let rec phi_ = function
-    | Prime (_) as p          -> Sum([ Opp(One) ; p ])
-    | Exp (Prime (_) as p, k) -> Prod ([ p ; Sum([ Opp (One) ])
-                                       ; Exp (p, Sum ([ k ; Opp (One) ])) ])
-    | Prod (l)                -> Prod (List.map (fun p -> phi_ p) l)
-    | RandomFault (_) as t    -> raise (Faulted t)
-    | ZeroFault (_) as t      -> raise (Faulted t)
-    | _ -> raise Not_prime
-  in
-  try phi_ t with
-  | Faulted (t) -> t
+let rec phi = function
+  | Prime (_) as p          -> Sum([ Opp(One) ; p ])
+  | Exp (Prime (_) as p, k) -> Prod ([ p ; Sum([ Opp (One) ])
+                                     ; Exp (p, Sum ([ k ; Opp (One) ])) ])
+  | Prod (l)                -> Prod (List.map (fun p -> phi p) l)
+  | _ -> raise Not_prime
 ;;
 
 let crt l m =
