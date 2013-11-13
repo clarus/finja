@@ -79,6 +79,7 @@ USAGE
 
   The "mp" in "mp_expr" stands for "maybe protected". An
   expression surrounded by "{" and "}" can't be faulted.
+  The same goes for "mp_cond".
     
   The attack success condition can use all the variables
   introduced in the computation term, plus two special variables
@@ -87,4 +88,4 @@ USAGE
   and the returned expression of the computation term with
   injected faults.
 
-  Examples of input files can be found in the tests directory.
+  Examples of input files can be found in the "tests" directory.
