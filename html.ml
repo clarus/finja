@@ -5,10 +5,14 @@ let html_of_term t =
   let rec noprop = function
     | Let (v, NoProp (v'), t) when v = v' ->
       ", <var>" ^ v ^ "</var>" ^ (noprop t)
+    | Let (v, Protected (NoProp (v')), t) when v = v' ->
+      ", <var>{" ^ v ^ "}</var>" ^ (noprop t)
     | t -> " ;\n" ^ (hot 0 t)
   and prime = function
     | Let (v, Prime (v'), t) when v = v' ->
       ", <var>" ^ v ^ "</var>" ^ (prime t)
+    | Let (v, Protected (Prime (v')), t) when v = v' ->
+      ", <var>{" ^ v ^ "}</var>" ^ (prime t)
     | t -> " ;\n" ^ (hot 0 t)
   and opp = function
     | Opp (t) -> " &minus; " ^ (hot 2 t)
@@ -17,8 +21,12 @@ let html_of_term t =
     (* p is for parentheses: 0 none, 1 might, 2 may *)
     | Let (v, NoProp (v'), t) when v = v' ->
       "<b>noprop</b> <var>" ^ v ^ "</var>" ^ (noprop t)
+    | Let (v, Protected (NoProp (v')), t) when v = v' ->
+      "<b>noprop</b> <var>{" ^ v ^ "}</var>" ^ (noprop t)
     | Let (v, Prime (v'), t) when v = v' ->
       "<b>prime</b> <var>" ^ v ^ "</var>" ^ (prime t)
+    | Let (v, Protected (Prime (v')), t) when v = v' ->
+      "<b>prime</b> <var>{" ^ v ^ "}</var>" ^ (prime t)
     | Let (v, e, t) ->
       "<var>" ^ v ^ "</var> := " ^ (hot 0 e) ^ " ;\n" ^ (hot 0 t)
     | Var (v) | NoProp (v) | Prime (v) ->
