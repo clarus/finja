@@ -41,18 +41,16 @@ desc:
 ;
 
 term:
-| Lnoprop; l = separated_nonempty_list(Lcomma, Lident); Lsemicolon;
+| Lnoprop; l = separated_nonempty_list(Lcomma, mp_noprop); Lsemicolon;
   cont = term {
   List.fold_right
-  (fun i acc -> t (PLet (i, t (PNoProp (i)) $startpos(l) $endpos(l), acc))
-    $startpos $endpos)
+  (fun i acc -> t (PLet (fst i, snd i, acc)) $startpos $endpos)
   l cont
 }
-| Lprime; l = separated_nonempty_list(Lcomma, Lident); Lsemicolon;
+| Lprime; l = separated_nonempty_list(Lcomma, mp_prime); Lsemicolon;
   cont = term {
   List.fold_right
-  (fun i acc -> t (PLet (i, t (PPrime (i)) $startpos(l) $endpos(l), acc))
-    $startpos $endpos)
+  (fun i acc -> t (PLet (fst i, snd i, acc)) $startpos $endpos)
   l cont
 }
 | i = Lident; Lassign; e = mp_expr; Lsemicolon; cont = term {
@@ -63,6 +61,24 @@ term:
 }
 | Lreturn; e = mp_expr; Lsemicolon {
   t (PReturn (e)) $startpos $endpos
+}
+;
+
+mp_noprop:
+| Lobrace; i = Lident; Lcbrace {
+  i, t (PProtected (t (PNoProp (i)) $startpos(i) $endpos(i))) $startpos $endpos
+}
+| i = Lident {
+  i, t (PNoProp (i)) $startpos $endpos
+}
+;
+
+mp_prime:
+| Lobrace; i = Lident; Lcbrace {
+  i, t (PProtected (t (PPrime (i)) $startpos(i) $endpos(i))) $startpos $endpos
+}
+| i = Lident {
+  i, t (PPrime (i)) $startpos $endpos
 }
 ;
 
