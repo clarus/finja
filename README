@@ -54,8 +54,8 @@ USAGE
     fia     ::= term '%%' cond
     term    ::= ( stmt )* 'return' mp_expr ';'
     stmt    ::= ( decl | assign | verif ) ';'
-    decl    ::= 'noprop' var ( ',' var )*
-              | 'prime' var ( ',' var )*
+    decl    ::= 'noprop' mp_var ( ',' mp_var )*
+              | 'prime' mp_var ( ',' mp_var )*
     assign  ::= var ':=' mp_expr
     verif   ::= 'if' mp_cond 'abort with' mp_expr
     mp_expr ::= '{' expr '}' | expr
@@ -75,11 +75,13 @@ USAGE
               | mp_expr '!=[' mp_expr ']' mp_expr
               | mp_cond '/\' mp_cond
               | mp_cond '\/' mp_cond
+    mp_var  ::= '{' var '}' | var
     var     ::= [a-zA-Z][a-zA-Z0-9_']*
 
-  The "mp" in "mp_expr" stands for "maybe protected". An
-  expression surrounded by "{" and "}" can't be faulted.
-  The same goes for "mp_cond".
+  The "mp" in "mp_var", "mp_expr" and "mp_cond" stands for
+  "maybe protected". A variable name at declaration time, an
+  expression, or a condition surrounded by "{" and "}" can't be
+  faulted.
     
   The attack success condition can use all the variables
   introduced in the computation term, plus two special variables
