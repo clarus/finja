@@ -1,5 +1,5 @@
 noprop m, e ;
-prime p, q ;
+prime {p}, {q} ;
 
 dp := { e^-1 mod (p-1) } ;
 dq := { e^-1 mod (q-1) } ;

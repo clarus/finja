@@ -1,6 +1,6 @@
 noprop error ;
 noprop m, e, r1, r2 ;
-prime p, q, t ;
+prime {p}, {q}, t ;
 
 dp := { e^-1 mod (p-1) } ;
 dq := { e^-1 mod (q-1) } ;

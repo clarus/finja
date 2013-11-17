@@ -1,6 +1,6 @@
 noprop ERR1, ERR2, ERR3, ERR4, ERR5, ERR6, ERR7, ERR8, ERR9 ;
 noprop M, e, r, R1, R2, R3, R4 ;
-prime p, q ;
+prime {p}, {q} ;
 
 dp := { e^-1 mod (p-1) } ;
 dq := { e^-1 mod (q-1) } ;

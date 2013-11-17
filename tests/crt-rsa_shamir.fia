@@ -1,6 +1,6 @@
 noprop error ;
 noprop m, d ;
-prime p, q, r ;
+prime {p}, {q}, r ;
 
 iq := { q^-1 mod p } ;
 
