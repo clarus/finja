@@ -15,12 +15,15 @@ INTSALL
 
 - finja depends on:
 
-  - OCaml <http://www.ocaml.org/>
-  - Batteries <http://batteries.forge.ocamlcore.org/>
+  - OCaml <http://www.ocaml.org/> 3.12.1+
+  - Batteries <http://batteries.forge.ocamlcore.org/> 2.1+
   - menhir <http://gallium.inria.fr/~fpottier/menhir/>
   - Sexplib <https://github.com/janestreet/sexplib>
 
-- Compile with:
+  These dependencies can easily be installed using the OCaml
+  Package Manager, OPAM <http://opam.ocaml.org/>.
+
+- Once the dependencies are installed, compile finja with:
 
     ocamlbuild -use-ocamlfind finja.native
 
@@ -82,7 +85,7 @@ USAGE
   "maybe protected". A variable name at declaration time, an
   expression, or a condition surrounded by "{" and "}" can't be
   faulted.
-    
+
   The attack success condition can use all the variables
   introduced in the computation term, plus two special variables
   "_" and "@" which respectively represent the returned
