@@ -1,11 +1,9 @@
-TYPE_CONV_PATH "Computation"
-
-open Sexplib.Std
+open Sexplib.Std ;;
 
 type term_p = {
   term: pterm ;
-  spos: Lexing.position;
-  epos: Lexing.position;
+  spos: Lexing.position ;
+  epos: Lexing.position ;
 }
 and pterm =
 | PLet       of string * term_p * term_p
