@@ -19,6 +19,7 @@ let add_fault_type ftype =
   if List.length !fault_types >= !count
   then raise (Arg.Bad "Too many fault type options")
   else fault_types := ftype :: !fault_types
+;;
 
 let usage = "finja [options] <input-file>" ;;
 let options =
@@ -39,8 +40,8 @@ let options =
   ; "-n", Arg.Set_int count,
     "Specify the number of faults (default is 1). If specified, you can use \
      the -r or -z option for each fault (last one is repeated)."
-  ] ;;
-
+  ]
+;;
 
 let location startp endp =
   let l = startp.Lexing.pos_lnum in
