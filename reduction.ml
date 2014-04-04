@@ -3,7 +3,6 @@ open Computation ;;
 
 exception Not_prime ;;
 exception Should_not_happen ;;
-exception Foo ;;
 
 module Env = Map.Make(String) ;;
 
