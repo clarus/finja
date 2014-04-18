@@ -201,9 +201,7 @@ and red env term =
     red env (if reduce_cond env c then t else e)
   | Sum (l)            ->
     let l' = List.stable_sort compare
-      (reduce_sum env
-         (List.map (red env)
-            (List.stable_sort compare (flatten_sum l)))) in
+      (flatten_sum (reduce_sum env (List.map (red env) l))) in
     begin
       match l' with
       | []    -> Zero
@@ -219,9 +217,7 @@ and red env term =
   end
   | Prod (l)           ->
     let l' = List.stable_sort compare
-      (reduce_prod env
-         (List.map (red env)
-            (List.stable_sort compare (flatten_prod l)))) in
+      (flatten_prod (reduce_prod env (List.map (red env) l))) in
     begin
       match l' with
       | []    -> One
